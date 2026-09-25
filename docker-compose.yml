@@ -1,0 +1,7 @@
+services:
+  signal-bot:
+    image: ghcr.io/igedesurya/signal-bot:latest
+    container_name: signal-bot
+    ports:
+      - "8080:80"
+    restart: unless-stopped
