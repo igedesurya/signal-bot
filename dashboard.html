@@ -1,0 +1,270 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Signal Bot - Panduan Awam</title>
+<style>
+body { font-family: system-ui, -apple-system, sans-serif; max-width: 780px; margin: 24px auto; padding: 0 16px; background: #0f1115; color: #e8eaf0; }
+h1 { font-size: 20px; margin-bottom: 2px; }
+.sub { color: #9aa3b2; font-size: 13px; margin-top: 0; }
+.card { background: #171a21; border: 1px solid #2a2f3a; border-radius: 12px; padding: 16px; margin-top: 12px; }
+.row { display: flex; gap: 12px; flex-wrap: wrap; align-items: end; }
+label { font-size: 13px; color: #9aa3b2; }
+select, button { background: #222736; color: #fff; border: 1px solid #39404f; border-radius: 8px; padding: 8px 10px; font-size: 14px; }
+button { cursor: pointer; }
+.badge { display: inline-block; padding: 8px 14px; border-radius: 999px; font-weight: 800; font-size: 15px; }
+.buy { background: #123d2a; color: #4ade80; border: 1px solid #1f7a4d; }
+.sell { background: #441619; color: #f87171; border: 1px solid #7f2b30; }
+.wait { background: #2a2f3a; color: #e8eaf0; border: 1px solid #3a4152; }
+.meaning { font-size: 14px; line-height: 1.6; margin-top: 10px; }
+.meaning li { margin-bottom: 4px; }
+ul { padding-left: 18px; margin: 8px 0; }
+.grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px; margin-top: 12px; }
+.stat { background: #10131a; border: 1px solid #262c39; border-radius: 8px; padding: 10px; }
+.stat small { color: #9aa3b2; display: block; font-size: 12px; }
+.stat b { font-size: 16px; }
+.stat span { font-size: 12px; color: #9aa3b2; }
+.legend { font-size: 12px; color: #9aa3b2; margin-top: 10px; line-height: 1.7; }
+.dot { display: inline-block; width: 10px; height: 10px; border-radius: 2px; margin-right: 4px; }
+.wrap { position: relative; }
+canvas { width: 100%; height: 340px; background: #10131a; border: 1px solid #262c39; border-radius: 8px; margin-top: 8px; display: block; }
+#tip { position: absolute; display: none; background: #222736; border: 1px solid #39404f; border-radius: 8px; padding: 8px 10px; font-size: 12px; pointer-events: none; z-index: 5; white-space: nowrap; }
+.hist { font-size: 13px; margin-top: 10px; line-height: 1.7; }
+.hist code { background: #10131a; padding: 2px 6px; border-radius: 6px; }
+details { margin-top: 10px; font-size: 13px; color: #9aa3b2; }
+pre { background: #10131a; padding: 12px; border-radius: 8px; overflow: auto; font-size: 12px; }
+.warn { font-size: 12px; color: #9aa3b2; margin-top: 10px; border-top: 1px solid #262c39; padding-top: 10px; }
+</style>
+</head>
+<body>
+<h1>Signal Bot - Versi Bahasa Awam</h1>
+<p class="sub">Data publik Binance Spot, read-only. Bukan perintah beli/jual otomatis.</p>
+
+<div class="card">
+<div class="row">
+<div><label>Koin</label><br><select id="symbol"><option>BTCUSDT</option><option>ETHUSDT</option><option>SOLUSDT</option><option>BNBUSDT</option></select></div>
+<div><label>Jangka waktu</label><br><select id="interval"><option value="15m">15 menit</option><option value="1h" selected>1 jam</option><option value="4h">4 jam</option><option value="1d">1 hari</option></select></div>
+<div><label>&nbsp;</label><br><button id="refresh">Refresh</button></div>
+</div>
+<div style="margin-top:14px"><span id="sig" class="badge wait">Memuat...</span></div>
+<div class="meaning"><ul id="explain"></ul></div>
+</div>
+
+<div class="card">
+<div class="grid">
+<div class="stat"><small>Harga sekarang</small><b id="price">-</b><br><span id="since">-</span></div>
+<div class="stat"><small>Tren pendek (rata-rata 20)</small><b id="sma20">-</b><br><span>Rata-rata harga 20 candle terakhir</span></div>
+<div class="stat"><small>Tren panjang (rata-rata 50)</small><b id="sma50">-</b><br><span>Rata-rata harga 50 candle terakhir</span></div>
+<div class="stat"><small>Kekuatan pasar (RSI)</small><b id="rsi">-</b><br><span id="rsilabel">-</span></div>
+</div>
+<div class="legend">
+<span class="dot" style="background:#22c55e"></span>Candle hijau = harga naik &nbsp;
+<span class="dot" style="background:#ef4444"></span>Candle merah = harga turun &nbsp;
+<span class="dot" style="background:#60a5fa"></span>Garis biru = tren pendek &nbsp;
+<span class="dot" style="background:#f59e0b"></span>Garis oranye = tren panjang<br>
+Segitiga <b style="color:#4ade80">B</b> = di candle itu muncul tanda mulai menarik untuk beli &nbsp;|&nbsp;
+Segitiga <b style="color:#f87171">J</b> = di candle itu muncul tanda mulai bahaya, waktunya hati-hati/kurangi<br>
+Arahkan kursor ke chart untuk lihat detail tiap candle.
+</div>
+<div class="wrap"><canvas id="chart" width="740" height="340"></canvas><div id="tip"></div></div>
+<div class="hist" id="hist"></div>
+<details><summary>Lihat data mentah (untuk yang ngerti teknis)</summary><pre id="json">{}</pre></details>
+<div class="warn">Catatan: ini alat bantu baca tren, bukan nasihat keuangan. Sinyal JUAL artinya kondisi sedang melemah, bukan jaminan harga pasti turun. Jangan pakai uang yang tidak siap hilang.</div>
+</div>
+
+<script>
+const $ = id => document.getElementById(id);
+const fmtT = t => new Date(t).toLocaleString('id-ID', {day:'numeric', month:'short', hour:'2-digit', minute:'2-digit'});
+
+function smaAt(a, i, n) {
+  if (i + 1 < n) return null;
+  let s = 0;
+  for (let k = i - n + 1; k <= i; k++) s += a[k];
+  return s / n;
+}
+function rsiAt(a, i, p=14) {
+  if (i < p) return null;
+  let g = 0, l = 0;
+  for (let k = i - p + 1; k <= i; k++) {
+    const d = a[k] - a[k-1];
+    if (d >= 0) g += d; else l += -d;
+  }
+  if (l === 0) return 100;
+  return 100 - (100 / (1 + g / l));
+}
+function signalAt(closes, i) {
+  const s20 = smaAt(closes, i, 20), s50 = smaAt(closes, i, 50), r = rsiAt(closes, i, 14);
+  if (s20 == null || s50 == null || r == null) return { s: 'WAIT', s20, s50, r };
+  if (s20 > s50 && r < 70) return { s: 'BUY', s20, s50, r };
+  if (s20 < s50 && r > 30) return { s: 'SELL', s20, s50, r };
+  return { s: 'WAIT', s20, s50, r };
+}
+
+const TEXT = {
+  BUY: {
+    badge: 'BELI / TAHAN - Tren Lagi Naik', cls: 'buy',
+    points: [
+      '<b>Apa yang terjadi:</b> harga sekarang di atas rata-rata, dan belum terlalu panas. Artinya pembeli sedang lebih kuat dari penjual.',
+      '<b>Artinya buat kamu:</b> ini masa yang lebih aman untuk melirik beli dibanding saat tren turun.',
+      '<b>Harus apa:</b> kalau <b>belum punya</b>, boleh cicil kecil dulu, jangan all-in. Kalau <b>sudah punya</b>, tahan dulu. Tanda B hijau di chart menunjukkan di candle mana kondisi ini mulai muncul.'
+    ]
+  },
+  SELL: {
+    badge: 'HATI-HATI / KURANGI - Tren Lagi Turun', cls: 'sell',
+    points: [
+      '<b>Apa yang terjadi:</b> harga sekarang di bawah rata-rata pendek dan panjang. Artinya penjual sedang lebih kuat dari pembeli.',
+      '<b>Artinya buat kamu:</b> ini bukan waktu yang bagus untuk beli. Risiko nyangkut lebih besar.',
+      '<b>Harus apa:</b> kalau <b>sudah punya koinnya</b>, pertimbangkan jual sebagian atau pasang batas rugi. Kalau <b>belum punya</b>, jangan beli dulu, tunggu sampai muncul tanda B hijau. Tanda J merah di chart menunjukkan di candle mana penurunan ini mulai terdeteksi.'
+    ]
+  },
+  WAIT: {
+    badge: 'TUNGGU DULU - Belum Jelas', cls: 'wait',
+    points: [
+      '<b>Apa yang terjadi:</b> harga dan rata-rata lagi nempel, pasar ragu-ragu mau naik atau turun.',
+      '<b>Artinya buat kamu:</b> tidak ada keunggulan buat beli maupun jual sekarang.',
+      '<b>Harus apa:</b> diam dulu dan pantau. Tunggu sampai badge berubah jadi BELI atau HATI-HATI.'
+    ]
+  }
+};
+
+let candles = [], sigs = [];
+
+async function load() {
+  const sym = $('symbol').value, iv = $('interval').value;
+  $('sig').textContent = 'Memuat...'; $('sig').className = 'badge wait';
+  try {
+    const res = await fetch(`https://api.binance.com/api/v3/klines?symbol=${sym}&interval=${iv}&limit=100`);
+    const raw = await res.json();
+    candles = raw.map(r => ({ t: r[0], o: +r[1], h: +r[2], l: +r[3], c: +r[4] }));
+    const closes = candles.map(k => k.c);
+    sigs = closes.map((_, i) => signalAt(closes, i));
+    render(sym, iv);
+  } catch (e) {
+    $('sig').textContent = 'Gagal ambil data';
+    $('explain').innerHTML = '<li>Cek koneksi internet lalu klik Refresh.</li>';
+  }
+}
+
+function render(sym, iv) {
+  const last = candles.length - 1, cur = sigs[last];
+  const t = TEXT[cur.s];
+  const el = $('sig'); el.textContent = t.badge; el.className = 'badge ' + t.cls;
+  $('explain').innerHTML = t.points.map(p => `<li>${p}</li>`).join('');
+
+  const price = candles[last].c;
+  $('price').textContent = price.toLocaleString('en-US');
+  $('sma20').textContent = cur.s20 ? cur.s20.toLocaleString('en-US', {maximumFractionDigits: 2}) : '-';
+  $('sma50').textContent = cur.s50 ? cur.s50.toLocaleString('en-US', {maximumFractionDigits: 2}) : '-';
+  $('rsi').textContent = cur.r ? cur.r.toFixed(1) : '-';
+  $('rsilabel').textContent = cur.r == null ? '-' : cur.r >= 70 ? 'Panas: banyak yang beli, rawan turun' : cur.r <= 30 ? 'Dingin: banyak yang jual, bisa memantul' : 'Normal: tidak panas, tidak dingin';
+
+  let startIdx = last;
+  for (let i = last; i >= 0; i--) { if (sigs[i].s !== cur.s) break; startIdx = i; }
+  $('since').textContent = `Sinyal ini muncul sejak ${fmtT(candles[startIdx].t)} di harga ${candles[startIdx].c.toLocaleString('en-US')}`;
+
+  const changes = [];
+  for (let i = 1; i < candles.length; i++) {
+    if (sigs[i].s !== sigs[i-1].s && sigs[i].s !== 'WAIT') {
+      changes.push({ i, s: sigs[i].s, t: candles[i].t, p: candles[i].c });
+    }
+  }
+  const recent = changes.slice(-4).reverse();
+  $('hist').innerHTML = recent.length
+    ? '<b>Riwayat sinyal terakhir:</b><br>' + recent.map(c =>
+      `${c.s === 'BUY' ? 'Tanda <b style="color:#4ade80">B</b> (mulai menarik)' : 'Tanda <b style="color:#f87171">J</b> (mulai bahaya)'} - ${fmtT(c.t)} di harga <code>${c.p.toLocaleString('en-US')}</code>`
+    ).join('<br>')
+    : 'Belum ada perubahan sinyal dalam 100 candle terakhir.';
+
+  $('json').textContent = JSON.stringify({ symbol: sym, interval: iv, signal: cur.s, price, sma20: cur.s20, sma50: cur.s50, rsi14: cur.r }, null, 2);
+  draw();
+}
+
+function draw() {
+  const c = $('chart'), x = c.getContext('2d');
+  const W = c.width, H = c.height, padR = 64, padT = 14, padB = 18;
+  x.clearRect(0, 0, W, H);
+  const N = 70, start = Math.max(0, candles.length - N);
+  const vis = candles.slice(start), vs = sigs.slice(start);
+  const mn = Math.min(...vis.map(k => k.l)), mx = Math.max(...vis.map(k => k.h));
+  const rg = (mx - mn) || 1;
+  const cw = (W - padR) / vis.length;
+  const y = v => padT + (1 - (v - mn) / rg) * (H - padT - padB);
+
+  x.strokeStyle = '#232936'; x.fillStyle = '#9aa3b2'; x.font = '10px system-ui'; x.lineWidth = 1;
+  for (let g = 0; g <= 4; g++) {
+    const v = mn + rg * g / 4, yy = y(v);
+    x.beginPath(); x.moveTo(0, yy); x.lineTo(W - padR, yy); x.stroke();
+    x.fillText(v.toLocaleString('en-US', {maximumFractionDigits: 1}), W - padR + 6, yy + 3);
+  }
+
+  vis.forEach((k, j) => {
+    const cx = j * cw + cw / 2, up = k.c >= k.o;
+    const col = up ? '#22c55e' : '#ef4444';
+    x.strokeStyle = col; x.beginPath();
+    x.moveTo(cx, y(k.h)); x.lineTo(cx, y(k.l)); x.stroke();
+    const bw = Math.max(2, cw * 0.6);
+    const yO = y(k.o), yC = y(k.c);
+    x.fillStyle = col;
+    x.fillRect(cx - bw / 2, Math.min(yO, yC), bw, Math.max(1.5, Math.abs(yO - yC)));
+  });
+
+  const line = (get, col) => {
+    x.strokeStyle = col; x.lineWidth = 1.5; x.beginPath();
+    let started = false;
+    vis.forEach((k, j) => {
+      const gi = start + j, v = get(gi);
+      if (v == null) return;
+      const px = j * cw + cw / 2, py = y(v);
+      started ? x.lineTo(px, py) : x.moveTo(px, py);
+      started = true;
+    });
+    x.stroke(); x.lineWidth = 1;
+  };
+  line(gi => sigs[gi].s20, '#60a5fa');
+  line(gi => sigs[gi].s50, '#f59e0b');
+
+  vis.forEach((k, j) => {
+    const gi = start + j;
+    const isChange = gi > 0 && sigs[gi].s !== sigs[gi-1].s;
+    if (!isChange || vs[j].s === 'WAIT') return;
+    const cx = j * cw + cw / 2;
+    if (vs[j].s === 'BUY') {
+      const py = y(k.l) + 14;
+      x.fillStyle = '#22c55e';
+      x.beginPath(); x.moveTo(cx, py + 7); x.lineTo(cx - 6, py - 3); x.lineTo(cx + 6, py - 3); x.closePath(); x.fill();
+      x.fillStyle = '#4ade80'; x.font = 'bold 10px system-ui'; x.fillText('B', cx - 3.5, py - 6);
+    } else {
+      const py = y(k.h) - 14;
+      x.fillStyle = '#ef4444';
+      x.beginPath(); x.moveTo(cx, py - 7); x.lineTo(cx - 6, py + 3); x.lineTo(cx + 6, py + 3); x.closePath(); x.fill();
+      x.fillStyle = '#f87171'; x.font = 'bold 10px system-ui'; x.fillText('J', cx - 3, py + 13);
+    }
+  });
+
+  const lp = candles[candles.length-1].c, ly = y(lp);
+  x.setLineDash([4, 4]); x.strokeStyle = '#9aa3b2';
+  x.beginPath(); x.moveTo(0, ly); x.lineTo(W - padR, ly); x.stroke(); x.setLineDash([]);
+
+  c.onmousemove = e => {
+    const r = c.getBoundingClientRect();
+    const px = (e.clientX - r.left) * (c.width / r.width);
+    let j = Math.floor(px / cw);
+    j = Math.max(0, Math.min(vis.length - 1, j));
+    const k = vis[j], s = vs[j].s;
+    const tip = $('tip');
+    tip.style.display = 'block';
+    tip.innerHTML = `${fmtT(k.t)}<br>O: ${k.o.toLocaleString('en-US')} H: ${k.h.toLocaleString('en-US')}<br>L: ${k.l.toLocaleString('en-US')} C: ${k.c.toLocaleString('en-US')}<br>Sinyal saat itu: <b>${s === 'BUY' ? 'Menarik (B)' : s === 'SELL' ? 'Bahaya (J)' : 'Tunggu'}</b>`;
+    const tx = Math.min(r.width - 190, Math.max(4, (j * cw + cw) * (r.width / c.width)));
+    tip.style.left = tx + 'px'; tip.style.top = '8px';
+  };
+  c.onmouseleave = () => { $('tip').style.display = 'none'; };
+}
+
+$('refresh').onclick = load;
+$('symbol').onchange = load;
+$('interval').onchange = load;
+load(); setInterval(load, 60000);
+</script>
+</body>
+</html>
