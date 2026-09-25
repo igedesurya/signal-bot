@@ -79,6 +79,7 @@ Arahkan kursor ke chart untuk lihat detail tiap candle.
 <div><label>Candle simulasi</label><br><select id="simInterval"><option value="15m">15 menit</option><option value="1h" selected>1 jam</option><option value="4h">4 jam</option><option value="1d">1 hari</option></select></div>
 <div><label>Strategi simulasi</label><br><select id="simStrategy"><option value="SMA">SMA + RSI (lama)</option><option value="FREQ" selected>Freq ringan: TEMA + BB + RSI cross (baru)</option></select></div>
 <div><label>Batas rugi (stoploss)</label><br><select id="simSL"><option value="0">Tanpa stoploss</option><option value="0.03">3% dari harga beli</option><option value="0.05" selected>5% dari harga beli</option><option value="0.10">10% dari harga beli</option></select></div>
+<div><label>Target untung (minimal ROI)</label><br><select id="simROI"><option value="0">Tanpa target</option><option value="STD" selected>Standar: 4% lalu 2% lalu 1%</option><option value="FAST">Cepat: 2% langsung kunci</option><option value="SLOW">Sabar: 6% lalu 3%</option></select></div>
 <div><label>Mulai</label><br><input type="date" id="simFrom" value="2026-03-29" min="2024-01-01" max="2026-09-25"></div>
 <div><label>Sampai</label><br><input type="date" id="simTo" value="2026-09-25" min="2024-01-01" max="2026-09-25"></div>
 <div><label>&nbsp;</label><br><button id="simRun">Jalankan simulasi</button></div>
@@ -374,6 +375,14 @@ async function runSim() {
   const cap = parseFloat($('simCapital').value) || 1000;
   const slPct = parseFloat($('simSL').value) || 0;
   const slLabel = $('simSL').selectedOptions[0].text;
+  const roiMode = $('simROI').value;
+  const roiLabel = $('simROI').selectedOptions[0].text;
+  const roiTarget = (held) => {
+    if (roiMode === 'FAST') return 0.02;
+    if (roiMode === 'SLOW') { if (held < 10) return 0.06; if (held < 20) return 0.03; return 0.01; }
+    if (roiMode === 'STD') { if (held < 5) return 0.04; if (held < 10) return 0.02; if (held < 20) return 0.01; return 0.0; }
+    return Infinity;
+  };
   const fromMs = new Date($('simFrom').value + 'T00:00:00Z').getTime();
   const toMs = new Date($('simTo').value + 'T23:59:59Z').getTime();
   const box = $('simOut');
@@ -389,7 +398,7 @@ async function runSim() {
     const closes = ks.map(k => k.c), vols = ks.map(k => k.v || 0);
     const simSigs = computeSigs(closes, vols, mode);
     const FEE = 0.001;
-    let cash = cap, pos = 0, entry = 0, trades = 0, wins = 0, slHits = 0, peak = cap, maxDd = 0;
+    let cash = cap, pos = 0, entry = 0, entryI = 0, trades = 0, wins = 0, slHits = 0, roiHits = 0, peak = cap, maxDd = 0;
     const eq = [];
     const startI = mode === 'FREQ' ? 30 : 50;
     const doExit = (p, tag) => {
@@ -397,13 +406,16 @@ async function runSim() {
       const ret = (p * (1 - FEE)) / (entry * (1 + FEE)) - 1;
       trades++; if (ret > 0) wins++;
       if (tag === 'stoploss') slHits++;
+      if (tag === 'roi') roiHits++;
       pos = 0;
     };
     for (let i = startI; i < closes.length; i++) {
       const s = simSigs[i].s, p = closes[i];
       if (pos > 0 && slPct > 0 && p <= entry * (1 - slPct)) {
         doExit(p, 'stoploss');
-      } else if (s === 'BUY' && pos === 0) { pos = (cash * (1 - FEE)) / p; entry = p; cash = 0; }
+      } else if (pos > 0 && roiMode !== '0' && p >= entry * (1 + roiTarget(i - entryI))) {
+        doExit(p, 'roi');
+      } else if (s === 'BUY' && pos === 0) { pos = (cash * (1 - FEE)) / p; entry = p; entryI = i; cash = 0; }
       else if (s === 'SELL' && pos > 0) {
         doExit(p, 'signal');
       }
@@ -434,10 +446,10 @@ async function runSim() {
       why = `Win rate lumayan (${winRate.toFixed(1)}%) tapi rata-rata per transaksi cuma ${avgPct >= 0 ? '+' : ''}${avgPct.toFixed(2)}%, jadi kalah dari hold.`;
     }
     box.innerHTML =
-      `Strategi <b>${simName}</b> + stoploss <b>${slLabel}</b> - periode <b>${$('simFrom').value} sampai ${$('simTo').value}</b> - dari <b>${ks.length}</b> candle ${sym} (${ivLabel}): modal <b>$${cap.toLocaleString()}</b> jadi <b>$${cash.toLocaleString('en-US',{maximumFractionDigits:2})} (${retPct >= 0 ? '+' : ''}${retPct.toFixed(1)}%)</b>.<br>` +
-      `Buy di awal lalu hold sampai akhir: <b>${bhPct >= 0 ? '+' : ''}${bhPct.toFixed(1)}%</b>. Transaksi: <b>${trades}</b>${slPct > 0 ? ` (kena stoploss <b>${slHits}x</b>)` : ''}, menang <b>${winRate.toFixed(1)}%</b>. Rata-rata per transaksi <b>${avgPct >= 0 ? '+' : ''}${avgPct.toFixed(2)}%</b>. Turun terdalam: <b>${(maxDd*100).toFixed(1)}%</b>.<br>` +
+      `Strategi <b>${simName}</b> + stoploss <b>${slLabel}</b> + target <b>${roiLabel}</b> - periode <b>${$('simFrom').value} sampai ${$('simTo').value}</b> - dari <b>${ks.length}</b> candle ${sym} (${ivLabel}): modal <b>$${cap.toLocaleString()}</b> jadi <b>$${cash.toLocaleString('en-US',{maximumFractionDigits:2})} (${retPct >= 0 ? '+' : ''}${retPct.toFixed(1)}%)</b>.<br>` +
+      `Buy di awal lalu hold sampai akhir: <b>${bhPct >= 0 ? '+' : ''}${bhPct.toFixed(1)}%</b>. Transaksi: <b>${trades}</b>${slPct > 0 ? ` (kena stoploss <b>${slHits}x</b>)` : ''}${roiMode !== '0' ? ` (kunci untung <b>${roiHits}x</b>)` : ''}, menang <b>${winRate.toFixed(1)}%</b>. Rata-rata per transaksi <b>${avgPct >= 0 ? '+' : ''}${avgPct.toFixed(2)}%</b>. Turun terdalam: <b>${(maxDd*100).toFixed(1)}%</b>.<br>` +
       `<span style="color:#e8eaf0"><b>Artinya:</b> ${verdict} ${why}</span> <span style="font-size:12px">Fee 0,1% per sisi.</span>`;
-    $('simMeta').textContent = `Terakhir dihitung ${new Date().toLocaleString('id-ID')} untuk ${sym} ${$('simFrom').value} -> ${$('simTo').value} strategi ${simName} SL ${slLabel}.`;
+    $('simMeta').textContent = `Terakhir dihitung ${new Date().toLocaleString('id-ID')} untuk ${sym} ${$('simFrom').value} -> ${$('simTo').value} strategi ${simName} SL ${slLabel} ROI ${roiLabel}.`;
     drawSim(eq, cap);
   } catch (e) {
     box.textContent = 'Gagal hitung simulasi, cek koneksi lalu coba lagi.';
