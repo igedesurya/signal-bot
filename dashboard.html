@@ -81,14 +81,6 @@ Arahkan kursor ke chart untuk lihat detail tiap candle.
 <div id="simOut" style="font-size:14px;line-height:1.7;margin-top:10px;background:#10131a;border:1px solid #2f6fed;border-radius:8px;padding:10px;color:#e8eaf0">HASIL SIMULASIMU muncul di sini. Klik Jalankan simulasi.</div>
 <div id="simMeta" style="font-size:12px;color:#9aa3b2;margin-top:4px"></div>
 <canvas id="simChart" width="740" height="180" style="height:180px"></canvas>
-<details style="margin-top:12px"><summary>Acuan tetap: contoh lama BTC 29 Mar - 25 Sep 2026 (tidak ikut berubah, klik untuk buka)</summary>
-<div class="hist" style="border-top:1px solid #262c39;padding-top:10px;margin-top:8px">
-Ikut sinyal: modal $1.000 jadi <b>$1.237 (+23,7%)</b>.<br>
-Buy di awal lalu hold sampai akhir: <b>+26,7% (lebih menguntungkan)</b>.<br>
-Total 44 transaksi, menang 17 kali (38,6%). Rata-rata per transaksi +0,55%. Penurunan terbesar -12,24%.<br>
-<span style="color:#9aa3b2">Artinya: buy di awal lalu hold sampai akhir akan lebih menguntungkan di periode ini. Sinyal kebanyakan transaksi tapi win rate kecil. Belum layak pakai uang asli.</span>
-</div>
-</details>
 </div>
 <details><summary>Lihat data mentah (untuk yang ngerti teknis)</summary><pre id="json">{}</pre></details>
 <div class="warn">Catatan: ini alat bantu baca tren, bukan nasihat keuangan. Sinyal JUAL artinya kondisi sedang melemah, bukan jaminan harga pasti turun. Jangan pakai uang yang tidak siap hilang.</div>
@@ -343,13 +335,23 @@ async function runSim() {
     }
     const retPct = (cash / cap - 1) * 100;
     const bhPct = (closes[closes.length-1] / closes[50] - 1) * 100;
-    const verdict = retPct > bhPct
-      ? 'Ikut sinyal akan lebih menguntungkan daripada buy lalu hold di periode ini.'
-      : 'Buy di awal lalu hold sampai akhir akan lebih menguntungkan di periode ini.';
+    const winRate = trades ? wins / trades * 100 : 0;
+    const avgPct = trades ? retPct / trades : 0;
+    let verdict, why;
+    if (retPct > bhPct) {
+      verdict = 'Ikut sinyal akan lebih menguntungkan daripada buy lalu hold di periode ini.';
+      why = `Sinyal berhasil menghindari sebagian penurunan. Win rate ${winRate.toFixed(1)}% dari ${trades} transaksi.`;
+    } else if (winRate < 45) {
+      verdict = 'Buy di awal lalu hold sampai akhir akan lebih menguntungkan di periode ini.';
+      why = `Sinyal kebanyakan transaksi (${trades}x) tapi win rate kecil (${winRate.toFixed(1)}%). Fee dan salah timing menggerus hasil. Belum layak pakai uang asli.`;
+    } else {
+      verdict = 'Buy di awal lalu hold sampai akhir akan lebih menguntungkan di periode ini.';
+      why = `Win rate lumayan (${winRate.toFixed(1)}%) tapi rata-rata per transaksi cuma ${avgPct >= 0 ? '+' : ''}${avgPct.toFixed(2)}%, jadi kalah dari hold.`;
+    }
     box.innerHTML =
       `Periode <b>${$('simFrom').value} sampai ${$('simTo').value}</b> - dari <b>${ks.length}</b> candle ${sym} (${$('interval').selectedOptions[0].text}): modal <b>$${cap.toLocaleString()}</b> jadi <b>$${cash.toLocaleString('en-US',{maximumFractionDigits:2})} (${retPct >= 0 ? '+' : ''}${retPct.toFixed(1)}%)</b>.<br>` +
-      `Buy di awal lalu hold sampai akhir: <b>${bhPct >= 0 ? '+' : ''}${bhPct.toFixed(1)}%</b>. Transaksi: <b>${trades}</b>, menang <b>${trades ? (wins/trades*100).toFixed(1) : 0}%</b>. Turun terdalam: <b>${(maxDd*100).toFixed(1)}%</b>.<br>` +
-      `<span style="color:#e8eaf0">${verdict}</span> <span style="font-size:12px">Fee 0,1% per sisi.</span>`;
+      `Buy di awal lalu hold sampai akhir: <b>${bhPct >= 0 ? '+' : ''}${bhPct.toFixed(1)}%</b>. Transaksi: <b>${trades}</b>, menang <b>${winRate.toFixed(1)}%</b>. Rata-rata per transaksi <b>${avgPct >= 0 ? '+' : ''}${avgPct.toFixed(2)}%</b>. Turun terdalam: <b>${(maxDd*100).toFixed(1)}%</b>.<br>` +
+      `<span style="color:#e8eaf0"><b>Artinya:</b> ${verdict} ${why}</span> <span style="font-size:12px">Fee 0,1% per sisi.</span>`;
     $('simMeta').textContent = `Terakhir dihitung ${new Date().toLocaleString('id-ID')} untuk ${sym} ${$('simFrom').value} -> ${$('simTo').value}.`;
     drawSim(eq, cap);
   } catch (e) {
