@@ -58,8 +58,8 @@ tailwind.config = { theme: { extend: { colors: { ink:'#0b0e14', card:'#141924', 
 <section class="cardx">
 <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 mb-2">
 <div><label class="lbl" data-i18n="lbl_asset">Aset</label><select id="symbol" class="inp mt-0.5">
-<optgroup label="Kripto 10 (Binance)" data-i18n-label="grp_crypto">
-<option>BTCUSDT</option><option>ETHUSDT</option><option>SOLUSDT</option><option>BNBUSDT</option><option>XRPUSDT</option><option>DOGEUSDT</option><option>ADAUSDT</option><option>AVAXUSDT</option><option>LINKUSDT</option><option>TONUSDT</option>
+<optgroup label="Kripto 11 (Binance)" data-i18n-label="grp_crypto">
+<option>BTCUSDT</option><option>ETHUSDT</option><option>SOLUSDT</option><option>BNBUSDT</option><option>XRPUSDT</option><option>DOGEUSDT</option><option>ADAUSDT</option><option>AVAXUSDT</option><option>LINKUSDT</option><option>TONUSDT</option><option>SHIBUSDT</option>
 </optgroup>
 <optgroup label="Emas (Binance + Yahoo)" data-i18n-label="grp_gold">
 <option value="PAXGUSDT" data-i18n="opt_paxg">Emas PAXG (PAXGUSDT)</option>
@@ -118,8 +118,8 @@ tailwind.config = { theme: { extend: { colors: { ink:'#0b0e14', card:'#141924', 
 <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2">
 <div><label class="lbl" data-i18n="lbl_capital">Modal awal (USDT)</label><select id="simCapital" class="inp mt-0.5"><option>100</option><option selected>1000</option><option>10000</option></select></div>
 <div><label class="lbl" data-i18n="lbl_sim_asset">Aset simulasi</label><select id="simSymbol" class="inp mt-0.5">
-<optgroup label="Kripto 10 (Binance)" data-i18n-label="grp_crypto">
-<option>BTCUSDT</option><option>ETHUSDT</option><option>SOLUSDT</option><option>BNBUSDT</option><option>XRPUSDT</option><option>DOGEUSDT</option><option>ADAUSDT</option><option>AVAXUSDT</option><option>LINKUSDT</option><option>TONUSDT</option>
+<optgroup label="Kripto 11 (Binance)" data-i18n-label="grp_crypto">
+<option>BTCUSDT</option><option>ETHUSDT</option><option>SOLUSDT</option><option>BNBUSDT</option><option>XRPUSDT</option><option>DOGEUSDT</option><option>ADAUSDT</option><option>AVAXUSDT</option><option>LINKUSDT</option><option>TONUSDT</option><option>SHIBUSDT</option>
 </optgroup>
 <optgroup label="Emas (Binance + Yahoo)" data-i18n-label="grp_gold">
 <option value="PAXGUSDT" data-i18n="opt_paxg">Emas PAXG (PAXGUSDT)</option>
@@ -168,7 +168,7 @@ const STR = {
     chart_title:'Grafik harga + sinyal B / J', chart_desc:'Segitiga hijau B = mulai menarik untuk beli, merah J = mulai bahaya.',
     lbl_asset:'Aset', lbl_tf:'Jangka waktu', lbl_strategy:'Strategi', lbl_action:'Aksi', btn_refresh:'Refresh',
     legend:'<span style="display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:4px;background:#22c55e"></span>Candle hijau naik &nbsp; <span style="display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:4px;background:#ef4444"></span>Candle merah turun &nbsp; <span style="display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:4px;background:#60a5fa"></span>Garis cepat (SMA20 / TEMA9) &nbsp; <span style="display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:4px;background:#f59e0b"></span>Garis acuan (SMA50 / BB tengah)<br>Segitiga <b style="color:#4ade80">B</b> = mulai menarik untuk beli &nbsp;|&nbsp; Segitiga <b style="color:#f87171">J</b> = mulai bahaya, hati-hati/kurangi<br>Arahkan kursor ke chart untuk lihat detail tiap candle.',
-    grp_crypto:'Kripto 10 (Binance)', grp_gold:'Emas (Binance + Yahoo)', grp_us:'Saham AS 10 (Yahoo)', grp_in:'Saham India 10 (Yahoo)', grp_id:'Saham Indonesia 10 (Yahoo)',
+    grp_crypto:'Kripto 11 (Binance)', grp_gold:'Emas (Binance + Yahoo)', grp_us:'Saham AS 10 (Yahoo)', grp_in:'Saham India 10 (Yahoo)', grp_id:'Saham Indonesia 10 (Yahoo)',
     opt_paxg:'Emas PAXG (PAXGUSDT)', opt_xaut:'Emas XAUT (XAUTUSDT)', opt_gcf:'Emas Futures (GC=F)',
     tf_15m:'15 menit', tf_1h:'1 jam', tf_4h:'4 jam', tf_1d:'1 hari',
     strat_sma:'SMA + RSI (lama)', strat_freq1:'Freq v1: TEMA + BB + RSI cross', strat_freq2:'Freq v2: ikut tren + keluar cepat', strat_freq3:'Freq v3: momentum + tahan tren',
@@ -237,7 +237,7 @@ const STR = {
     chart_title:'Price chart + B / J signals', chart_desc:'Green triangle B = turning attractive to buy, red J = turning risky.',
     lbl_asset:'Asset', lbl_tf:'Timeframe', lbl_strategy:'Strategy', lbl_action:'Action', btn_refresh:'Refresh',
     legend:'<span style="display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:4px;background:#22c55e"></span>Green candle = price up &nbsp; <span style="display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:4px;background:#ef4444"></span>Red candle = price down &nbsp; <span style="display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:4px;background:#60a5fa"></span>Fast line (SMA20 / TEMA9) &nbsp; <span style="display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:4px;background:#f59e0b"></span>Reference line (SMA50 / BB middle)<br>Triangle <b style="color:#4ade80">B</b> = turning attractive to buy &nbsp;|&nbsp; Triangle <b style="color:#f87171">J</b> = turning risky, be careful<br>Hover the chart to see each candle detail.',
-    grp_crypto:'Crypto 10 (Binance)', grp_gold:'Gold (Binance + Yahoo)', grp_us:'US stocks 10 (Yahoo)', grp_in:'India stocks 10 (Yahoo)', grp_id:'Indonesia stocks 10 (Yahoo)',
+    grp_crypto:'Crypto 11 (Binance)', grp_gold:'Gold (Binance + Yahoo)', grp_us:'US stocks 10 (Yahoo)', grp_in:'India stocks 10 (Yahoo)', grp_id:'Indonesia stocks 10 (Yahoo)',
     opt_paxg:'Gold PAXG (PAXGUSDT)', opt_xaut:'Gold XAUT (XAUTUSDT)', opt_gcf:'Gold Futures (GC=F)',
     tf_15m:'15 minutes', tf_1h:'1 hour', tf_4h:'4 hours', tf_1d:'1 day',
     strat_sma:'SMA + RSI (old)', strat_freq1:'Freq v1: TEMA + BB + RSI cross', strat_freq2:'Freq v2: trend follow + fast exit', strat_freq3:'Freq v3: momentum + hold trend',
