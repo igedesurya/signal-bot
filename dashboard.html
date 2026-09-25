@@ -74,6 +74,8 @@ Arahkan kursor ke chart untuk lihat detail tiap candle.
 <div style="font-size:13px;color:#9aa3b2;margin:4px 0 10px">Pilih modal dan rentang tanggal, lalu klik Jalankan. Dihitung langsung di browser dari data Binance.</div>
 <div class="row">
 <div><label>Modal awal (USDT)</label><br><select id="simCapital"><option>100</option><option selected>1000</option><option>10000</option></select></div>
+<div><label>Koin simulasi</label><br><select id="simSymbol"><option>BTCUSDT</option><option>ETHUSDT</option><option>SOLUSDT</option><option>BNBUSDT</option><option>XRPUSDT</option><option>DOGEUSDT</option><option>ADAUSDT</option><option>AVAXUSDT</option><option>LINKUSDT</option><option>TONUSDT</option></select></div>
+<div><label>Candle simulasi</label><br><select id="simInterval"><option value="15m">15 menit</option><option value="1h" selected>1 jam</option><option value="4h">4 jam</option><option value="1d">1 hari</option></select></div>
 <div><label>Mulai</label><br><input type="date" id="simFrom" value="2026-03-29" min="2024-01-01" max="2026-09-25"></div>
 <div><label>Sampai</label><br><input type="date" id="simTo" value="2026-09-25" min="2024-01-01" max="2026-09-25"></div>
 <div><label>&nbsp;</label><br><button id="simRun">Jalankan simulasi</button></div>
@@ -298,13 +300,17 @@ async function fetchRange(sym, iv, fromMs, toMs) {
 }
 
 async function runSim() {
-  const sym = $('symbol').value, iv = $('interval').value;
+  const sym = $('simSymbol').value, iv = $('simInterval').value;
+  const ivLabel = $('simInterval').selectedOptions[0].text;
   const cap = parseFloat($('simCapital').value) || 1000;
   const fromMs = new Date($('simFrom').value + 'T00:00:00Z').getTime();
   const toMs = new Date($('simTo').value + 'T23:59:59Z').getTime();
   const box = $('simOut');
   if (!(fromMs < toMs)) { box.textContent = 'Tanggal mulai harus sebelum tanggal sampai.'; return; }
   if (toMs - fromMs > 366*864e5) { box.textContent = 'Maksimal rentang 12 bulan biar tidak berat.'; return; }
+  const ivMs = { '15m': 9e5, '1h': 36e5, '4h': 144e5, '1d': 864e5 }[iv] || 36e5;
+  const est = Math.ceil((toMs - fromMs) / ivMs);
+  if (est > 5000) { box.textContent = `Rentang terlalu panjang untuk candle ${ivLabel} (kira-kira ${est.toLocaleString()} candle). Persempit tanggalnya, maksimal sekitar 5.000 candle.`; return; }
   box.textContent = 'Mengambil data dan menghitung...';
   try {
     const ks = await fetchRange(sym, iv, fromMs, toMs);
@@ -349,7 +355,7 @@ async function runSim() {
       why = `Win rate lumayan (${winRate.toFixed(1)}%) tapi rata-rata per transaksi cuma ${avgPct >= 0 ? '+' : ''}${avgPct.toFixed(2)}%, jadi kalah dari hold.`;
     }
     box.innerHTML =
-      `Periode <b>${$('simFrom').value} sampai ${$('simTo').value}</b> - dari <b>${ks.length}</b> candle ${sym} (${$('interval').selectedOptions[0].text}): modal <b>$${cap.toLocaleString()}</b> jadi <b>$${cash.toLocaleString('en-US',{maximumFractionDigits:2})} (${retPct >= 0 ? '+' : ''}${retPct.toFixed(1)}%)</b>.<br>` +
+      `Periode <b>${$('simFrom').value} sampai ${$('simTo').value}</b> - dari <b>${ks.length}</b> candle ${sym} (${ivLabel}): modal <b>$${cap.toLocaleString()}</b> jadi <b>$${cash.toLocaleString('en-US',{maximumFractionDigits:2})} (${retPct >= 0 ? '+' : ''}${retPct.toFixed(1)}%)</b>.<br>` +
       `Buy di awal lalu hold sampai akhir: <b>${bhPct >= 0 ? '+' : ''}${bhPct.toFixed(1)}%</b>. Transaksi: <b>${trades}</b>, menang <b>${winRate.toFixed(1)}%</b>. Rata-rata per transaksi <b>${avgPct >= 0 ? '+' : ''}${avgPct.toFixed(2)}%</b>. Turun terdalam: <b>${(maxDd*100).toFixed(1)}%</b>.<br>` +
       `<span style="color:#e8eaf0"><b>Artinya:</b> ${verdict} ${why}</span> <span style="font-size:12px">Fee 0,1% per sisi.</span>`;
     $('simMeta').textContent = `Terakhir dihitung ${new Date().toLocaleString('id-ID')} untuk ${sym} ${$('simFrom').value} -> ${$('simTo').value}.`;
