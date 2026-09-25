@@ -159,6 +159,20 @@ tailwind.config = { theme: { extend: { colors: { ink:'#0b0e14', card:'#141924', 
 const $ = id => document.getElementById(id);
 let LANG = (() => { try { return localStorage.getItem('lang') || 'id'; } catch (e) { return 'id'; } })();
 const fmtT = t => new Date(t).toLocaleString(LANG === 'en' ? 'en-US' : 'id-ID', {day:'numeric', month:'short', hour:'2-digit', minute:'2-digit'});
+const SUBS = '₀₁₂₃₄₅₆₇₈₉';
+function fmtPrice(v) {
+  if (v == null || isNaN(v)) return '-';
+  const a = Math.abs(v);
+  if (a >= 1000) return v.toLocaleString('en-US', {maximumFractionDigits: 0});
+  if (a >= 0.01) return v.toLocaleString('en-US', {maximumFractionDigits: 2});
+  if (a === 0) return '0';
+  const exp = Math.floor(Math.log10(a));
+  const zeros = Math.max(0, -exp - 1);
+  const mant = Number(a.toPrecision(3)) / Math.pow(10, exp);
+  let digits = String(Math.round(mant * 100)).replace(/0+$/, '') || '0';
+  const sub = String(zeros).split('').map(d => SUBS[+d]).join('');
+  return `${v < 0 ? '-' : ''}0.0${sub}${digits}`;
+}
 
 const STR = {
   id: {
@@ -556,15 +570,15 @@ function render(sym, iv, mode) {
   $('trendLongDesc').textContent = mode === 'FREQ' ? t('td_long_freq1') : mode === 'FREQ2' ? t('td_long_freq2') : mode === 'FREQ3' ? t('td_long_freq3') : t('td_long_sma');
 
   const price = candles[last].c;
-  $('price').textContent = price.toLocaleString('en-US');
-  $('sma20').textContent = cur.s20 ? cur.s20.toLocaleString('en-US', {maximumFractionDigits: 2}) : '-';
-  $('sma50').textContent = cur.s50 ? cur.s50.toLocaleString('en-US', {maximumFractionDigits: 2}) : '-';
+  $('price').textContent = fmtPrice(price);
+  $('sma20').textContent = cur.s20 ? fmtPrice(cur.s20) : '-';
+  $('sma50').textContent = cur.s50 ? fmtPrice(cur.s50) : '-';
   $('rsi').textContent = cur.r ? cur.r.toFixed(1) : '-';
   $('rsilabel').textContent = cur.r == null ? '-' : cur.r >= 70 ? t('rsi_hot') : cur.r <= 30 ? t('rsi_cold') : t('rsi_norm');
 
   let startIdx = last;
   for (let i = last; i >= 0; i--) { if (sigs[i].s !== cur.s) break; startIdx = i; }
-  $('since').textContent = T('since', fmtT(candles[startIdx].t), candles[startIdx].c.toLocaleString('en-US'));
+  $('since').textContent = T('since', fmtT(candles[startIdx].t), fmtPrice(candles[startIdx].c));
 
   const changes = [];
   for (let i = 1; i < candles.length; i++) {
@@ -575,7 +589,7 @@ function render(sym, iv, mode) {
   const recent = changes.slice(-4).reverse();
   $('hist').innerHTML = recent.length
     ? `<b>${t('hist_head')}</b><br>` + recent.map(c =>
-      T('hist_line', c.s === 'BUY' ? t('hist_buy') : t('hist_sell'), fmtT(c.t), c.p.toLocaleString('en-US')) + (c.tag ? ` <code>${c.tag}</code>` : '')
+      T('hist_line', c.s === 'BUY' ? t('hist_buy') : t('hist_sell'), fmtT(c.t), fmtPrice(c.p)) + (c.tag ? ` <code>${c.tag}</code>` : '')
     ).join('<br>')
     : t('hist_none');
 
@@ -585,11 +599,13 @@ function render(sym, iv, mode) {
 
 function draw() {
   const c = $('chart'), x = c.getContext('2d');
-  const W = c.width, H = c.height, padR = 64, padT = 14, padB = 18;
+  const W = c.width, H = c.height, padT = 14, padB = 18;
+  let padR = 64;
   x.clearRect(0, 0, W, H);
   const N = 70, start = Math.max(0, candles.length - N);
   const vis = candles.slice(start), vs = sigs.slice(start);
   const mn = Math.min(...vis.map(k => k.l)), mx = Math.max(...vis.map(k => k.h));
+  if (mn < 0.01) padR = 118;
   const rg = (mx - mn) || 1;
   const cw = (W - padR) / vis.length;
   const y = v => padT + (1 - (v - mn) / rg) * (H - padT - padB);
@@ -598,7 +614,7 @@ function draw() {
   for (let g = 0; g <= 4; g++) {
     const v = mn + rg * g / 4, yy = y(v);
     x.beginPath(); x.moveTo(0, yy); x.lineTo(W - padR, yy); x.stroke();
-    x.fillText(v.toLocaleString('en-US', {maximumFractionDigits: 1}), W - padR + 6, yy + 3);
+    x.fillText(fmtPrice(v), W - padR + 6, yy + 3);
   }
 
   vis.forEach((k, j) => {
@@ -657,7 +673,7 @@ function draw() {
     const k = vis[j], s = vs[j].s, tg = vs[j].tag || '';
     const tip = $('tip');
     tip.style.display = 'block';
-    tip.innerHTML = `${fmtT(k.t)}<br>O: ${k.o.toLocaleString('en-US')} H: ${k.h.toLocaleString('en-US')}<br>L: ${k.l.toLocaleString('en-US')} C: ${k.c.toLocaleString('en-US')}<br>${t('tip_signal')} <b>${s === 'BUY' ? t('tip_buy') : s === 'SELL' ? t('tip_sell') : t('tip_wait')}</b>${tg ? `<br>${t('tip_reason')} <code>${tg}</code>` : ''}`;
+    tip.innerHTML = `${fmtT(k.t)}<br>O: ${fmtPrice(k.o)} H: ${fmtPrice(k.h)}<br>L: ${fmtPrice(k.l)} C: ${fmtPrice(k.c)}<br>${t('tip_signal')} <b>${s === 'BUY' ? t('tip_buy') : s === 'SELL' ? t('tip_sell') : t('tip_wait')}</b>${tg ? `<br>${t('tip_reason')} <code>${tg}</code>` : ''}`;
     const tx = Math.min(r.width - 190, Math.max(4, (j * cw + cw) * (r.width / c.width)));
     tip.style.left = tx + 'px'; tip.style.top = '8px';
   };
