@@ -2,7 +2,7 @@
 import json
 import urllib.request
 
-BASE = "https://api.binance.com"
+BASE = "https://data-api.binance.vision"
 SYMBOL = "BTCUSDT"
 INTERVAL = "1h"
 LIMIT = 100

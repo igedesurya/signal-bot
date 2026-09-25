@@ -288,7 +288,7 @@ async function load() {
   const sym = $('symbol').value, iv = $('interval').value, mode = $('strategy').value;
   $('sig').textContent = 'Memuat...'; $('sig').className = 'badge wait';
   try {
-    const res = await fetch(`https://api.binance.com/api/v3/klines?symbol=${sym}&interval=${iv}&limit=100`);
+    const res = await fetch(`https://data-api.binance.vision/api/v3/klines?symbol=${sym}&interval=${iv}&limit=100`);
     const raw = await res.json();
     candles = raw.map(r => ({ t: r[0], o: +r[1], h: +r[2], l: +r[3], c: +r[4], v: +r[5] }));
     const closes = candles.map(k => k.c), vols = candles.map(k => k.v);
@@ -433,7 +433,7 @@ async function fetchRange(sym, iv, fromMs, toMs) {
   const out = [];
   let cur = fromMs;
   while (cur < toMs) {
-    const url = `https://api.binance.com/api/v3/klines?symbol=${sym}&interval=${iv}&limit=1000&startTime=${cur}`;
+    const url = `https://data-api.binance.vision/api/v3/klines?symbol=${sym}&interval=${iv}&limit=1000&startTime=${cur}`;
     const res = await fetch(url);
     const batch = await res.json();
     if (!Array.isArray(batch) || !batch.length) break;

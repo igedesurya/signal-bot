@@ -3,7 +3,7 @@ import json
 import urllib.request
 from datetime import datetime, timezone, timedelta
 
-BASE = "https://api.binance.com"
+BASE = "https://data-api.binance.vision"
 SYMBOL = "BTCUSDT"
 INTERVAL = "1h"
 FEE = 0.001  # 0.1% per side
