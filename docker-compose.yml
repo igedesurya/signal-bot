@@ -3,7 +3,7 @@ services:
     image: ghcr.io/igedesurya/signal-bot:latest
     container_name: signal-bot
     ports:
-      - "8080:8080"
+      - "8087:8087"
     environment:
-      - PORT=8080
+      - PORT=8087
     restart: unless-stopped

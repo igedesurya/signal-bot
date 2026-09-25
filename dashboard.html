@@ -15,10 +15,13 @@ body { font-family: system-ui, -apple-system, "Segoe UI", sans-serif; margin: 0;
 .brand span { color: var(--acc); }
 .tag { font-size: 11px; color: var(--mut); border: 1px solid var(--line); border-radius: 999px; padding: 3px 9px; }
 main { max-width: 1280px; margin: 0 auto; padding: 12px 16px; }
-.hero { background: linear-gradient(135deg, #16203200, #162032), var(--card); border: 1px solid var(--line); border-radius: 14px; padding: 14px; display: grid; grid-template-columns: 1.25fr .75fr; gap: 14px; }
+.hero { background: linear-gradient(135deg, #16203200, #162032), var(--card); border: 1px solid var(--line); border-radius: 14px; padding: 14px; display: grid; grid-template-columns: 1.35fr 1fr; gap: 14px; align-items: stretch; }
 @media (max-width: 900px) { .hero { grid-template-columns: 1fr; } }
-.hero h1 { font-size: 18px; margin: 0 0 2px; }
-.sub { color: var(--mut); font-size: 12px; margin: 0 0 8px; }
+.hero-label { font-size: 10.5px; color: var(--mut); text-transform: uppercase; letter-spacing: .6px; margin-bottom: 7px; }
+.hero-left { display: flex; flex-direction: column; }
+.hero-stats { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.card-head { display: flex; gap: 12px; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; margin-bottom: 8px; }
+.card-head > div:first-child { min-width: 220px; }
 .card { background: var(--card); border: 1px solid var(--line); border-radius: 14px; padding: 13px; margin-top: 12px; }
 .card h2 { font-size: 14px; margin: 0 0 2px; }
 .card p.desc { font-size: 12px; color: var(--mut); margin: 0 0 9px; }
@@ -70,13 +73,25 @@ footer { max-width: 1280px; margin: 0 auto; padding: 14px 16px; color: var(--mut
 </div></header>
 <main>
 <div class="hero">
-<div>
-<h1>Baca tren pasar tanpa pusing</h1>
-<p class="sub">Sinyal BELI / HATI-HATI / TUNGGU dari data publik Binance + Yahoo. Bukan perintah beli/jual otomatis, bukan nasihat keuangan.</p>
-<div style="margin-top:14px"><span id="sig" class="badge wait">Memuat...</span></div>
+<div class="hero-left">
+<div class="hero-label">Sinyal saat ini</div>
+<span id="sig" class="badge wait">Memuat...</span>
 <div class="meaning"><ul id="explain"></ul></div>
 </div>
+<div class="hero-stats">
+<div class="stat"><small>Harga sekarang</small><b id="price">-</b><br><span id="since">-</span></div>
+<div class="stat"><small id="trendShortLabel">Tren cepat</small><b id="sma20">-</b><br><span id="trendShortDesc">-</span></div>
+<div class="stat"><small id="trendLongLabel">Tren acuan</small><b id="sma50">-</b><br><span id="trendLongDesc">-</span></div>
+<div class="stat"><small>Kekuatan pasar (RSI)</small><b id="rsi">-</b><br><span id="rsilabel">-</span></div>
+</div>
+</div>
+
+<div class="card">
+<div class="card-head">
 <div>
+<h2>Grafik harga + sinyal B / J</h2>
+<p class="desc">Segitiga hijau B = mulai menarik untuk beli, merah J = mulai bahaya.</p>
+</div>
 <div class="row">
 <div><label>Aset</label><br><select id="symbol">
 <optgroup label="Kripto 10 (Binance)">
@@ -98,28 +113,17 @@ footer { max-width: 1280px; margin: 0 auto; padding: 14px 16px; color: var(--mut
 </optgroup>
 </select></div>
 <div><label>Jangka waktu</label><br><select id="interval"><option value="15m">15 menit</option><option value="1h" selected>1 jam</option><option value="4h">4 jam</option><option value="1d">1 hari</option></select></div>
-<div><label>Strategi chart</label><br><select id="strategy"><option value="SMA">SMA + RSI (lama)</option><option value="FREQ">Freq v1: TEMA + BB + RSI cross</option><option value="FREQ2">Freq v2: ikut tren + keluar cepat</option><option value="FREQ3" selected>Freq v3: momentum + tahan tren (baru)</option></select></div>
+<div><label>Strategi</label><br><select id="strategy"><option value="SMA">SMA + RSI (lama)</option><option value="FREQ">Freq v1: TEMA + BB + RSI cross</option><option value="FREQ2">Freq v2: ikut tren + keluar cepat</option><option value="FREQ3" selected>Freq v3: momentum + tahan tren (baru)</option></select></div>
 <div><label>&nbsp;</label><br><button id="refresh">Refresh</button></div>
 </div>
-<div class="preset-row" style="margin-top:10px">
+</div>
+<div class="preset-row" style="margin:0 0 8px">
 <button id="cP1d" class="preset" style="background:#123d2a;border-color:#1f7a4d">Chart: BTC 1D Freq v1</button>
 <button id="cP4h" class="preset" style="background:#123d2a;border-color:#1f7a4d">Chart: BTC 4H SMA</button>
 <button id="cPUS" class="preset" style="background:#1e2a4a;border-color:#3b82f6">Chart: NVDA daily</button>
 <button id="cPID" class="preset" style="background:#1e2a4a;border-color:#3b82f6">Chart: BBCA daily</button>
 <button id="cPGold" class="preset" style="background:#3a2f10;border-color:#b98a1d">Chart: Emas daily</button>
 </div>
-<div class="grid">
-<div class="stat"><small>Harga sekarang</small><b id="price">-</b><br><span id="since">-</span></div>
-<div class="stat"><small id="trendShortLabel">Tren cepat</small><b id="sma20">-</b><br><span id="trendShortDesc">-</span></div>
-<div class="stat"><small id="trendLongLabel">Tren acuan</small><b id="sma50">-</b><br><span id="trendLongDesc">-</span></div>
-<div class="stat"><small>Kekuatan pasar (RSI)</small><b id="rsi">-</b><br><span id="rsilabel">-</span></div>
-</div>
-</div>
-</div>
-
-<div class="card">
-<h2>Grafik harga + sinyal B / J</h2>
-<p class="desc">Segitiga hijau B = mulai menarik untuk beli. Segitiga merah J = mulai bahaya. Arahkan kursor ke grafik untuk detail tiap candle.</p>
 <div class="legend">
 <span class="dot" style="background:#22c55e"></span>Candle hijau = harga naik &nbsp;
 <span class="dot" style="background:#ef4444"></span>Candle merah = harga turun &nbsp;
@@ -382,7 +386,7 @@ async function yahooCandles(sym, iv) {
   const map = { '15m': '15m', '1h': '60m', '4h': '60m', '1d': '1d' };
   const yiv = map[iv] || '1d';
   const rng = iv === '1d' ? '6mo' : '3mo';
-  const base = (typeof location !== 'undefined' && location.port) ? '' : 'http://127.0.0.1:8080';
+  const base = (typeof location !== 'undefined' && location.port) ? '' : 'http://127.0.0.1:8087';
   const res = await fetch(`${base}/api/yahoo?symbol=${encodeURIComponent(sym)}&interval=${yiv}&range=${rng}`);
   const j = await res.json();
   const r = j.chart && j.chart.result && j.chart.result[0];
@@ -651,7 +655,7 @@ async function yahooRange(sym, iv, fromMs, toMs) {
   const map = { '15m': '15m', '1h': '60m', '4h': '60m', '1d': '1d' };
   const yiv = map[iv] || '1d';
   const p1 = Math.floor(fromMs / 1000), p2 = Math.floor(toMs / 1000);
-  const base = (typeof location !== 'undefined' && location.port) ? '' : 'http://127.0.0.1:8080';
+  const base = (typeof location !== 'undefined' && location.port) ? '' : 'http://127.0.0.1:8087';
   const res = await fetch(`${base}/api/yahoo?symbol=${encodeURIComponent(sym)}&interval=${yiv}&period1=${p1}&period2=${p2}`);
   const j = await res.json();
   const r = j.chart && j.chart.result && j.chart.result[0];

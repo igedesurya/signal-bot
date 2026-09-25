@@ -7,7 +7,7 @@ COPY dashboard.html index.html
 COPY dashboard.html dashboard.html
 COPY server.py server.py
 
-ENV PORT=8080
-EXPOSE 8080
-HEALTHCHECK --interval=30s --timeout=3s CMD wget -qO- http://127.0.0.1:8080/api/health >/dev/null 2>&1 || exit 1
+ENV PORT=8087
+EXPOSE 8087
+HEALTHCHECK --interval=30s --timeout=3s CMD wget -qO- http://127.0.0.1:8087/api/health >/dev/null 2>&1 || exit 1
 CMD ["python", "server.py"]

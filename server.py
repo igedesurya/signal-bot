@@ -74,7 +74,7 @@ class H(BaseHTTPRequestHandler):
 
 if __name__ == "__main__":
     import os
-    port = int(os.environ.get("PORT", "8080"))
+    port = int(os.environ.get("PORT", "8087"))
     srv = ThreadingHTTPServer(("0.0.0.0", port), H)
     print(f"signal-bot on :{port}")
     srv.serve_forever()
