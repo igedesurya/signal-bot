@@ -72,7 +72,13 @@ Arahkan kursor ke chart untuk lihat detail tiap candle.
 <div class="hist" id="hist"></div>
 <div class="card" style="margin:12px 0 0 0;padding:14px">
 <b>Simulasi: kalau ikut sinyal ini pakai uangmu</b>
-<div style="font-size:13px;color:#9aa3b2;margin:4px 0 10px">Pilih modal dan rentang tanggal, lalu klik Jalankan. Dihitung langsung di browser dari data Binance.</div>
+<div style="font-size:13px;color:#9aa3b2;margin:4px 0 10px">Pilih modal dan rentang tanggal, lalu klik Jalankan. Dihitung langsung di browser dari data Binance. Atau pakai paket juara hasil backtest 6 bulan:</div>
+<div class="row" style="margin-bottom:10px">
+<button id="preset1d" style="background:#123d2a;border-color:#1f7a4d">Paket 1D juara (Freq v1 +26,3%)</button>
+<button id="preset4h" style="background:#123d2a;border-color:#1f7a4d">Paket 4H juara (SMA +31,0%)</button>
+<button id="presetHold" style="background:#2a2f3a">Paket 1H: hold saja</button>
+</div>
+<div id="simWarn" style="font-size:13px;color:#fbbf24;margin-bottom:8px"></div>
 <div class="row">
 <div><label>Modal awal (USDT)</label><br><select id="simCapital"><option>100</option><option selected>1000</option><option>10000</option></select></div>
 <div><label>Koin simulasi</label><br><select id="simSymbol"><option>BTCUSDT</option><option>ETHUSDT</option><option>SOLUSDT</option><option>BNBUSDT</option><option>XRPUSDT</option><option>DOGEUSDT</option><option>ADAUSDT</option><option>AVAXUSDT</option><option>LINKUSDT</option><option>TONUSDT</option></select></div>
@@ -427,6 +433,31 @@ $('interval').onchange = load;
 $('strategy').onchange = load;
 $('simRun').onclick = runSim;
 $('simCompare').onclick = runCompare;
+$('simInterval').onchange = () => {
+  $('simWarn').textContent = $('simInterval').value === '15m'
+    ? 'Peringatan: 15 menit rugi semua di backtest 6 bulan (-8,5% vs hold -7,5%). Fee 0,2% per transaksi membunuh strategi di timeframe sekecil ini. Yakin lanjut?'
+    : $('simInterval').value === '1h'
+    ? 'Catatan: di 1 jam buy-hold (+23,7%) mengalahkan sinyal terbaik (+11,7%). Pertimbangkan hold saja.'
+    : '';
+};
+const applyPreset = (iv, strat) => {
+  $('simInterval').value = iv;
+  $('simStrategy').value = strat;
+  $('simSL').value = '0.20';
+  $('simTrail').value = '0.15';
+  $('simROI').value = 'SLOW';
+  $('strategy').value = strat;
+  $('interval').value = iv;
+  $('simInterval').onchange();
+  load();
+};
+$('preset1d').onclick = () => { applyPreset('1d', 'FREQ'); };
+$('preset4h').onclick = () => { applyPreset('4h', 'SMA'); };
+$('presetHold').onclick = () => {
+  $('simWarn').textContent = 'Paket 1H: backtest bilang buy lalu hold (+23,7%) menang atas sinyal (+11,7%). Jadi tidak perlu ikut sinyal di 1 jam, beli di awal lalu tahan.';
+  $('simInterval').value = '1h';
+  $('simInterval').onchange();
+};
 load(); setInterval(load, 60000);
 
 async function fetchRange(sym, iv, fromMs, toMs) {
