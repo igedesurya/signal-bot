@@ -5,95 +5,63 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Signal Bot — Baca Tren Kripto Bahasa Awam</title>
 <meta name="description" content="Dashboard sinyal tren kripto dari data publik Binance Spot. Read-only, tanpa auto-trade. Bahasa awam.">
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+tailwind.config = { theme: { extend: { colors: { ink:'#0b0e14', card:'#141924', card2:'#0f141d', line:'#232b3b', txt:'#eef1f6', mut:'#9aa3b8', acc:'#3b82f6', grn:'#22c55e', red:'#ef4444' } } } };
+</script>
+<style type="text/tailwindcss">
+@layer components {
+  .inp { @apply w-full bg-[#1c2333] text-white border border-[#323c52] rounded-lg px-2.5 py-1.5 text-[12.5px]; }
+  .btn { @apply bg-[#1c2333] text-white border border-[#323c52] rounded-lg px-3 py-1.5 text-[12.5px] font-bold cursor-pointer hover:brightness-110; }
+  .chip { @apply rounded-full px-3 py-1 text-[11.5px] font-semibold border text-white cursor-pointer hover:brightness-110; }
+  .tile { @apply rounded-xl border border-line bg-card2 px-2.5 py-2; }
+  .lbl { @apply text-[11px] text-mut; }
+  .cardx { @apply rounded-2xl border border-line bg-card p-3.5 sm:p-4 mt-3; }
+}
+</style>
 <style>
-:root { --bg:#0b0e14; --card:#141924; --card2:#0f141d; --line:#232b3b; --txt:#eef1f6; --mut:#9aa3b8; --acc:#3b82f6; --grn:#22c55e; --red:#ef4444; }
-* { box-sizing: border-box; }
-body { font-family: system-ui, -apple-system, "Segoe UI", sans-serif; margin: 0; background: var(--bg); color: var(--txt); font-size: 13px; }
-.topbar { position: sticky; top: 0; z-index: 10; background: rgba(11,14,20,.92); backdrop-filter: blur(8px); border-bottom: 1px solid var(--line); }
-.topbar-in { max-width: 1280px; margin: 0 auto; padding: 8px 16px; display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
-.brand { font-weight: 800; font-size: 15px; }
-.brand span { color: var(--acc); }
-.tag { font-size: 11px; color: var(--mut); border: 1px solid var(--line); border-radius: 999px; padding: 3px 9px; }
-main { max-width: 1280px; margin: 0 auto; padding: 12px 16px; }
-.hero { background: linear-gradient(135deg, #16203200, #162032), var(--card); border: 1px solid var(--line); border-radius: 14px; padding: 14px; display: grid; grid-template-columns: 1.35fr 1fr; gap: 14px; align-items: stretch; }
-@media (max-width: 900px) { .hero { grid-template-columns: 1fr; } }
-.hero-label { font-size: 10.5px; color: var(--mut); text-transform: uppercase; letter-spacing: .6px; margin-bottom: 7px; }
-.hero-left { display: flex; flex-direction: column; }
-.hero-stats { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
-.card-head { display: flex; gap: 12px; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; margin-bottom: 8px; }
-.card-head > div:first-child { min-width: 220px; }
-.card { background: var(--card); border: 1px solid var(--line); border-radius: 14px; padding: 13px; margin-top: 12px; }
-.card h2 { font-size: 14px; margin: 0 0 2px; }
-.card p.desc { font-size: 12px; color: var(--mut); margin: 0 0 9px; }
-.row { display: flex; gap: 8px; flex-wrap: wrap; align-items: end; }
-label { font-size: 11px; color: var(--mut); }
-select, button, input[type=date] { background: #1c2333; color: #fff; border: 1px solid #323c52; border-radius: 9px; padding: 6px 9px; font-size: 12.5px; }
-button { cursor: pointer; font-weight: 700; }
-button:hover { filter: brightness(1.15); }
-.preset-row { display: flex; gap: 7px; flex-wrap: wrap; margin: 8px 0 10px; }
-.preset { border-radius: 999px; padding: 5px 11px; font-size: 11.5px; font-weight: 600; }
-.badge { display: inline-block; padding: 7px 14px; border-radius: 999px; font-weight: 800; font-size: 14px; }
-.buy { background: #0f3524; color: #4ade80; border: 1px solid #1f7a4d; }
-.sell { background: #451619; color: #f87171; border: 1px solid #7f2b30; }
-.wait { background: #232b3b; color: #e8eaf0; border: 1px solid #3a445c; }
-.meaning { font-size: 12.5px; line-height: 1.55; margin-top: 8px; }
-.meaning li { margin-bottom: 3px; }
-ul { padding-left: 16px; margin: 6px 0; }
-.grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 8px; margin-top: 8px; }
-.stat { background: var(--card2); border: 1px solid var(--line); border-radius: 10px; padding: 8px 10px; }
-.stat small { color: var(--mut); display: block; font-size: 11px; }
-.stat b { font-size: 16px; }
-.stat span { font-size: 11px; color: var(--mut); }
-.legend { font-size: 11px; color: var(--mut); margin-top: 8px; line-height: 1.5; }
-.dot { display: inline-block; width: 9px; height: 9px; border-radius: 2px; margin-right: 3px; }
-.wrap { position: relative; }
-canvas { width: 100%; background: var(--card2); border: 1px solid var(--line); border-radius: 10px; margin-top: 6px; display: block; }
-#chart { height: 300px; }
-#simChart { height: 160px; }
-#tip { position: absolute; display: none; background: #222a3d; border: 1px solid #39445e; border-radius: 8px; padding: 7px 9px; font-size: 11.5px; pointer-events: none; z-index: 5; white-space: nowrap; }
-.hist { font-size: 12px; margin-top: 8px; line-height: 1.6; }
-.hist code { background: var(--card2); padding: 2px 6px; border-radius: 6px; }
-details { margin-top: 8px; font-size: 12px; color: var(--mut); }
-pre { background: var(--card2); padding: 10px; border-radius: 8px; overflow: auto; font-size: 11.5px; }
-.warnbox { font-size: 12px; color: #fbbf24; margin-bottom: 6px; min-height: 2px; line-height: 1.5; }
-.result { font-size: 12.5px; line-height: 1.6; margin-top: 8px; background: var(--card2); border: 1px solid var(--acc); border-radius: 10px; padding: 10px; }
-table { width: 100%; font-size: 12px; border-collapse: collapse; background: var(--card2); border-radius: 10px; overflow: hidden; }
-th { color: var(--mut); text-align: left; padding: 8px; font-weight: 600; }
-td { padding: 8px; border-top: 1px solid var(--line); }
-footer { max-width: 1280px; margin: 0 auto; padding: 14px 16px; color: var(--mut); font-size: 11px; border-top: 1px solid var(--line); margin-top: 12px; line-height: 1.5; }
-.pill-win { color: #4ade80; font-weight: 800; } .pill-lose { color: #f87171; font-weight: 800; }
+/* kelas dinamis yang di-set lewat JS, biar pasti kebentuk */
+.badge { display:inline-block; padding:.45rem .9rem; border-radius:999px; font-weight:800; font-size:.875rem; }
+.badge.buy { background:#0f3524; color:#4ade80; border:1px solid #1f7a4d; }
+.badge.sell { background:#451619; color:#f87171; border:1px solid #7f2b30; }
+.badge.wait { background:#232b3b; color:#e8eaf0; border:1px solid #3a445c; }
+.hist code, .result code, .meaning code { background:#0f141d; padding:.1rem .35rem; border-radius:.35rem; }
+#tip { display:none; }
 </style>
 </head>
-<body>
-<header class="topbar"><div class="topbar-in">
-<div class="brand">Signal<span>Bot</span></div>
-<span class="tag">Data publik Binance Spot</span>
-<span class="tag">Read-only, tanpa auto-trade</span>
-<span class="tag">Bahasa awam</span>
-</div></header>
-<main>
-<div class="hero">
-<div class="hero-left">
-<div class="hero-label">Sinyal saat ini</div>
-<span id="sig" class="badge wait">Memuat...</span>
-<div class="meaning"><ul id="explain"></ul></div>
+<body class="bg-ink text-txt text-[13px] m-0 antialiased">
+<header class="sticky top-0 z-20 bg-ink/90 backdrop-blur border-b border-line">
+<div class="max-w-[1280px] mx-auto px-3 sm:px-4 py-2 flex items-center gap-2 flex-wrap">
+<div class="font-extrabold text-[15px]">Signal<span class="text-acc">Bot</span></div>
+<span class="text-[11px] text-mut border border-line rounded-full px-2.5 py-0.5">Binance + Yahoo</span>
+<span class="text-[11px] text-mut border border-line rounded-full px-2.5 py-0.5 hidden sm:inline">Read-only, tanpa auto-trade</span>
+<span class="text-[11px] text-mut border border-line rounded-full px-2.5 py-0.5 hidden md:inline">Bahasa awam</span>
 </div>
-<div class="hero-stats">
-<div class="stat"><small>Harga sekarang</small><b id="price">-</b><br><span id="since">-</span></div>
-<div class="stat"><small id="trendShortLabel">Tren cepat</small><b id="sma20">-</b><br><span id="trendShortDesc">-</span></div>
-<div class="stat"><small id="trendLongLabel">Tren acuan</small><b id="sma50">-</b><br><span id="trendLongDesc">-</span></div>
-<div class="stat"><small>Kekuatan pasar (RSI)</small><b id="rsi">-</b><br><span id="rsilabel">-</span></div>
-</div>
-</div>
+</header>
+<main class="max-w-[1280px] mx-auto px-3 sm:px-4 py-3">
 
-<div class="card">
-<div class="card-head">
-<div>
-<h2>Grafik harga + sinyal B / J</h2>
-<p class="desc">Segitiga hijau B = mulai menarik untuk beli, merah J = mulai bahaya.</p>
+<section class="rounded-2xl border border-line bg-card p-3.5 sm:p-4 grid grid-cols-1 lg:grid-cols-[1.35fr_1fr] gap-3.5 items-stretch">
+<div class="flex flex-col">
+<div class="text-[10.5px] uppercase tracking-wider text-mut mb-2">Sinyal saat ini</div>
+<span id="sig" class="badge wait self-start">Memuat...</span>
+<div class="meaning text-[12.5px] leading-relaxed mt-2"><ul id="explain" class="list-disc pl-4 space-y-1"></ul></div>
 </div>
-<div class="row">
-<div><label>Aset</label><br><select id="symbol">
+<div class="grid grid-cols-2 gap-2">
+<div class="tile"><small class="text-mut text-[11px] block">Harga sekarang</small><b id="price" class="text-base">-</b><br><span id="since" class="text-[11px] text-mut">-</span></div>
+<div class="tile"><small id="trendShortLabel" class="text-mut text-[11px] block">Tren cepat</small><b id="sma20" class="text-base">-</b><br><span id="trendShortDesc" class="text-[11px] text-mut">-</span></div>
+<div class="tile"><small id="trendLongLabel" class="text-mut text-[11px] block">Tren acuan</small><b id="sma50" class="text-base">-</b><br><span id="trendLongDesc" class="text-[11px] text-mut">-</span></div>
+<div class="tile"><small class="text-mut text-[11px] block">Kekuatan pasar (RSI)</small><b id="rsi" class="text-base">-</b><br><span id="rsilabel" class="text-[11px] text-mut">-</span></div>
+</div>
+</section>
+
+<section class="cardx">
+<div class="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-3 mb-2">
+<div>
+<h2 class="text-sm font-semibold m-0">Grafik harga + sinyal B / J</h2>
+<p class="text-[12px] text-mut m-0">Segitiga hijau B = mulai menarik untuk beli, merah J = mulai bahaya.</p>
+</div>
+<div class="grid grid-cols-2 sm:grid-cols-4 gap-2 lg:w-auto">
+<div><label class="lbl">Aset</label><select id="symbol" class="inp mt-0.5">
 <optgroup label="Kripto 10 (Binance)">
 <option>BTCUSDT</option><option>ETHUSDT</option><option>SOLUSDT</option><option>BNBUSDT</option><option>XRPUSDT</option><option>DOGEUSDT</option><option>ADAUSDT</option><option>AVAXUSDT</option><option>LINKUSDT</option><option>TONUSDT</option>
 </optgroup>
@@ -112,47 +80,50 @@ footer { max-width: 1280px; margin: 0 auto; padding: 14px 16px; color: var(--mut
 <option value="BBCA.JK">BBCA</option><option value="BBRI.JK">BBRI</option><option value="BMRI.JK">BMRI</option><option value="TLKM.JK">TLKM</option><option value="ASII.JK">ASII</option><option value="UNTR.JK">UNTR</option><option value="INDF.JK">INDF</option><option value="KLBF.JK">KLBF</option><option value="SMGR.JK">SMGR</option><option value="ADRO.JK">ADRO</option>
 </optgroup>
 </select></div>
-<div><label>Jangka waktu</label><br><select id="interval"><option value="15m">15 menit</option><option value="1h" selected>1 jam</option><option value="4h">4 jam</option><option value="1d">1 hari</option></select></div>
-<div><label>Strategi</label><br><select id="strategy"><option value="SMA">SMA + RSI (lama)</option><option value="FREQ">Freq v1: TEMA + BB + RSI cross</option><option value="FREQ2">Freq v2: ikut tren + keluar cepat</option><option value="FREQ3" selected>Freq v3: momentum + tahan tren (baru)</option></select></div>
-<div><label>&nbsp;</label><br><button id="refresh">Refresh</button></div>
+<div><label class="lbl">Jangka waktu</label><select id="interval" class="inp mt-0.5"><option value="15m">15 menit</option><option value="1h" selected>1 jam</option><option value="4h">4 jam</option><option value="1d">1 hari</option></select></div>
+<div><label class="lbl">Strategi</label><select id="strategy" class="inp mt-0.5"><option value="SMA">SMA + RSI (lama)</option><option value="FREQ">Freq v1: TEMA + BB + RSI cross</option><option value="FREQ2">Freq v2: ikut tren + keluar cepat</option><option value="FREQ3" selected>Freq v3: momentum + tahan tren</option></select></div>
+<div><label class="lbl">Aksi</label><button id="refresh" class="btn w-full mt-0.5">Refresh</button></div>
 </div>
 </div>
-<div class="preset-row" style="margin:0 0 8px">
-<button id="cP1d" class="preset" style="background:#123d2a;border-color:#1f7a4d">Chart: BTC 1D Freq v1</button>
-<button id="cP4h" class="preset" style="background:#123d2a;border-color:#1f7a4d">Chart: BTC 4H SMA</button>
-<button id="cPUS" class="preset" style="background:#1e2a4a;border-color:#3b82f6">Chart: NVDA daily</button>
-<button id="cPID" class="preset" style="background:#1e2a4a;border-color:#3b82f6">Chart: BBCA daily</button>
-<button id="cPGold" class="preset" style="background:#3a2f10;border-color:#b98a1d">Chart: Emas daily</button>
+<div class="flex flex-wrap gap-1.5 mb-2">
+<button id="cP1d" class="chip bg-[#123d2a] border-[#1f7a4d]">Chart: BTC 1D Freq v1</button>
+<button id="cP4h" class="chip bg-[#123d2a] border-[#1f7a4d]">Chart: BTC 4H SMA</button>
+<button id="cPUS" class="chip bg-[#1e2a4a] border-[#3b82f6]">Chart: NVDA daily</button>
+<button id="cPID" class="chip bg-[#1e2a4a] border-[#3b82f6]">Chart: BBCA daily</button>
+<button id="cPGold" class="chip bg-[#3a2f10] border-[#b98a1d]">Chart: Emas daily</button>
 </div>
-<div class="legend">
-<span class="dot" style="background:#22c55e"></span>Candle hijau = harga naik &nbsp;
-<span class="dot" style="background:#ef4444"></span>Candle merah = harga turun &nbsp;
-<span class="dot" style="background:#60a5fa"></span>Garis biru = garis cepat (SMA20 / TEMA9) &nbsp;
-<span class="dot" style="background:#f59e0b"></span>Garis oranye = garis acuan (SMA50 / BB tengah 20)<br>
-Segitiga <b style="color:#4ade80">B</b> = di candle itu muncul tanda mulai menarik untuk beli &nbsp;|&nbsp;
-Segitiga <b style="color:#f87171">J</b> = di candle itu muncul tanda mulai bahaya, waktunya hati-hati/kurangi<br>
+<div class="text-[11px] text-mut leading-snug">
+<span class="inline-block w-2.5 h-2.5 rounded-sm mr-1 align-middle" style="background:#22c55e"></span>Candle hijau naik &nbsp;
+<span class="inline-block w-2.5 h-2.5 rounded-sm mr-1 align-middle" style="background:#ef4444"></span>Candle merah turun &nbsp;
+<span class="inline-block w-2.5 h-2.5 rounded-sm mr-1 align-middle" style="background:#60a5fa"></span>Garis cepat (SMA20 / TEMA9) &nbsp;
+<span class="inline-block w-2.5 h-2.5 rounded-sm mr-1 align-middle" style="background:#f59e0b"></span>Garis acuan (SMA50 / BB tengah)<br>
+Segitiga <b class="text-[#4ade80]">B</b> = mulai menarik untuk beli &nbsp;|&nbsp;
+Segitiga <b class="text-[#f87171]">J</b> = mulai bahaya, hati-hati/kurangi<br>
 Arahkan kursor ke chart untuk lihat detail tiap candle.
 </div>
-<div class="wrap"><canvas id="chart" width="1200" height="420"></canvas><div id="tip"></div></div>
-<div class="hist" id="hist"></div>
+<div class="relative">
+<canvas id="chart" width="1200" height="420" class="w-full block rounded-xl border border-line bg-card2 mt-1.5 h-[220px] sm:h-[300px] md:h-[340px]"></canvas>
+<div id="tip" class="absolute bg-[#222a3d] border border-[#39445e] rounded-lg px-2.5 py-2 text-[11.5px] pointer-events-none z-10 whitespace-nowrap"></div>
 </div>
-<div class="card">
-<h2>Simulasi: kalau ikut sinyal ini pakai uangmu</h2>
-<p class="desc">Pilih modal dan rentang tanggal, lalu klik Jalankan. Cuma pakai setting di panel ini, tidak ikut chart atas.</p>
-<div class="preset-row">
-<button id="preset1d" class="preset" style="background:#123d2a;border-color:#1f7a4d">Sim: 1D juara (Freq v1 +26,3%)</button>
-<button id="preset4h" class="preset" style="background:#123d2a;border-color:#1f7a4d">Sim: 4H juara (SMA +31,0%)</button>
-<button id="presetHold" class="preset" style="background:#232b3b">Sim: 1H hold saja</button>
-<button id="presetUS" class="preset" style="background:#1e2a4a;border-color:#3b82f6">Sim: Saham AS (daily)</button>
-<button id="presetIN" class="preset" style="background:#1e2a4a;border-color:#3b82f6">Sim: Saham India (daily)</button>
-<button id="presetID" class="preset" style="background:#1e2a4a;border-color:#3b82f6">Sim: Saham ID (daily)</button>
-<button id="presetGold" class="preset" style="background:#3a2f10;border-color:#b98a1d">Sim: Emas (daily)</button>
+<div class="hist text-[12px] mt-2 leading-relaxed" id="hist"></div>
+</section>
+<section class="cardx">
+<h2 class="text-sm font-semibold m-0">Simulasi: kalau ikut sinyal ini pakai uangmu</h2>
+<p class="text-[12px] text-mut m-0 mb-2">Pilih modal dan rentang tanggal, lalu klik Jalankan. Cuma pakai setting di panel ini, tidak ikut chart atas.</p>
+<div class="flex flex-wrap gap-1.5 mb-2.5">
+<button id="preset1d" class="chip bg-[#123d2a] border-[#1f7a4d]">Sim: 1D juara (Freq v1 +26,3%)</button>
+<button id="preset4h" class="chip bg-[#123d2a] border-[#1f7a4d]">Sim: 4H juara (SMA +31,0%)</button>
+<button id="presetHold" class="chip bg-[#232b3b] border-[#3a445c]">Sim: 1H hold saja</button>
+<button id="presetUS" class="chip bg-[#1e2a4a] border-[#3b82f6]">Sim: Saham AS (daily)</button>
+<button id="presetIN" class="chip bg-[#1e2a4a] border-[#3b82f6]">Sim: Saham India (daily)</button>
+<button id="presetID" class="chip bg-[#1e2a4a] border-[#3b82f6]">Sim: Saham ID (daily)</button>
+<button id="presetGold" class="chip bg-[#3a2f10] border-[#b98a1d]">Sim: Emas (daily)</button>
 </div>
-<div class="warnbox" id="mktBox" style="color:#7dd3fc"></div>
-<div class="warnbox" id="simWarn"></div>
-<div class="row">
-<div><label>Modal awal (USDT)</label><br><select id="simCapital"><option>100</option><option selected>1000</option><option>10000</option></select></div>
-<div><label>Aset simulasi</label><br><select id="simSymbol">
+<div id="mktBox" class="text-[12px] text-[#7dd3fc] leading-snug mb-1.5"></div>
+<div id="simWarn" class="text-[12px] text-[#fbbf24] leading-snug mb-1.5"></div>
+<div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2">
+<div><label class="lbl">Modal awal (USDT)</label><select id="simCapital" class="inp mt-0.5"><option>100</option><option selected>1000</option><option>10000</option></select></div>
+<div><label class="lbl">Aset simulasi</label><select id="simSymbol" class="inp mt-0.5">
 <optgroup label="Kripto 10 (Binance)">
 <option>BTCUSDT</option><option>ETHUSDT</option><option>SOLUSDT</option><option>BNBUSDT</option><option>XRPUSDT</option><option>DOGEUSDT</option><option>ADAUSDT</option><option>AVAXUSDT</option><option>LINKUSDT</option><option>TONUSDT</option>
 </optgroup>
@@ -171,23 +142,24 @@ Arahkan kursor ke chart untuk lihat detail tiap candle.
 <option value="BBCA.JK">BBCA</option><option value="BBRI.JK">BBRI</option><option value="BMRI.JK">BMRI</option><option value="TLKM.JK">TLKM</option><option value="ASII.JK">ASII</option><option value="UNTR.JK">UNTR</option><option value="INDF.JK">INDF</option><option value="KLBF.JK">KLBF</option><option value="SMGR.JK">SMGR</option><option value="ADRO.JK">ADRO</option>
 </optgroup>
 </select></div>
-<div><label>Candle simulasi</label><br><select id="simInterval"><option value="15m">15 menit</option><option value="1h" selected>1 jam</option><option value="4h">4 jam</option><option value="1d">1 hari</option></select></div>
-<div><label>Strategi simulasi</label><br><select id="simStrategy"><option value="SMA">SMA + RSI (lama)</option><option value="FREQ">Freq v1: TEMA + BB + RSI cross</option><option value="FREQ2">Freq v2: ikut tren + keluar cepat</option><option value="FREQ3" selected>Freq v3: momentum + tahan tren (baru)</option></select></div>
-<div><label>Batas rugi (stoploss)</label><br><select id="simSL"><option value="0">Tanpa stoploss</option><option value="0.03">3% dari harga beli</option><option value="0.05">5% dari harga beli</option><option value="0.10">10% dari harga beli</option><option value="0.20" selected>20% dari harga beli (longgar)</option></select></div>
-<div><label>Trailing stop (ikut naik)</label><br><select id="simTrail"><option value="0" selected>Tanpa trailing</option><option value="0.05">5% dari puncak</option><option value="0.10">10% dari puncak</option><option value="0.15">15% dari puncak</option></select></div>
-<div><label>Target untung (minimal ROI)</label><br><select id="simROI"><option value="0">Tanpa target</option><option value="STD" selected>Standar: 4% lalu 2% lalu 1%</option><option value="FAST">Cepat: 2% langsung kunci</option><option value="SLOW">Sabar: 6% lalu 3%</option></select></div>
-<div><label>Mulai</label><br><input type="date" id="simFrom" value="2026-03-29" min="2024-01-01" max="2026-09-25"></div>
-<div><label>Sampai</label><br><input type="date" id="simTo" value="2026-09-25" min="2024-01-01" max="2026-09-25"></div>
-<div><label>&nbsp;</label><br><button id="simRun">Jalankan simulasi</button> <button id="simCompare" style="background:#123d2a;border-color:#1f7a4d">Bandingkan 4 strategi</button></div>
+<div><label class="lbl">Candle simulasi</label><select id="simInterval" class="inp mt-0.5"><option value="15m">15 menit</option><option value="1h" selected>1 jam</option><option value="4h">4 jam</option><option value="1d">1 hari</option></select></div>
+<div><label class="lbl">Strategi simulasi</label><select id="simStrategy" class="inp mt-0.5"><option value="SMA">SMA + RSI (lama)</option><option value="FREQ">Freq v1: TEMA + BB + RSI cross</option><option value="FREQ2">Freq v2: ikut tren + keluar cepat</option><option value="FREQ3" selected>Freq v3: momentum + tahan tren</option></select></div>
+<div><label class="lbl">Batas rugi (stoploss)</label><select id="simSL" class="inp mt-0.5"><option value="0">Tanpa stoploss</option><option value="0.03">3% dari harga beli</option><option value="0.05">5% dari harga beli</option><option value="0.10">10% dari harga beli</option><option value="0.20" selected>20% dari harga beli (longgar)</option></select></div>
+<div><label class="lbl">Trailing stop</label><select id="simTrail" class="inp mt-0.5"><option value="0" selected>Tanpa trailing</option><option value="0.05">5% dari puncak</option><option value="0.10">10% dari puncak</option><option value="0.15">15% dari puncak</option></select></div>
+<div><label class="lbl">Target untung (ROI)</label><select id="simROI" class="inp mt-0.5"><option value="0">Tanpa target</option><option value="STD" selected>Standar: 4% lalu 2% lalu 1%</option><option value="FAST">Cepat: 2% langsung kunci</option><option value="SLOW">Sabar: 6% lalu 3%</option></select></div>
+<div><label class="lbl">Mulai</label><input type="date" id="simFrom" value="2026-03-29" min="2024-01-01" max="2026-09-25" class="inp mt-0.5"></div>
+<div><label class="lbl">Sampai</label><input type="date" id="simTo" value="2026-09-25" min="2024-01-01" max="2026-09-25" class="inp mt-0.5"></div>
+<div><label class="lbl">Aksi</label><button id="simRun" class="btn w-full mt-0.5">Jalankan</button></div>
+<div><label class="lbl">Banding</label><button id="simCompare" class="btn w-full mt-0.5 bg-[#123d2a] border-[#1f7a4d]">Bandingkan 4 strategi</button></div>
 </div>
-<div class="result" id="simOut">HASIL SIMULASIMU muncul di sini. Klik Jalankan simulasi.</div>
-<div id="simTable" style="margin-top:10px"></div>
-<div id="simMeta" style="font-size:12px;color:#9aa3b2;margin-top:4px"></div>
-<canvas id="simChart" width="1200" height="200"></canvas>
-</div>
-<details class="card"><summary>Lihat data mentah (untuk yang ngerti teknis)</summary><pre id="json">{}</pre></details>
+<div class="result text-[12.5px] leading-relaxed mt-2 bg-card2 border border-acc rounded-xl p-2.5" id="simOut">HASIL SIMULASIMU muncul di sini. Klik Jalankan simulasi.</div>
+<div id="simTable" class="mt-2.5 overflow-x-auto text-[12px]"></div>
+<div id="simMeta" class="text-[11px] text-mut mt-1"></div>
+<canvas id="simChart" width="1200" height="200" class="w-full block rounded-xl border border-line bg-card2 mt-1.5 h-[160px]"></canvas>
+</section>
+<details class="cardx text-[12px] text-mut"><summary class="cursor-pointer">Lihat data mentah (untuk yang ngerti teknis)</summary><pre id="json" class="bg-card2 p-2.5 rounded-lg overflow-auto text-[11.5px] mt-2">{}</pre></details>
 </main>
-<footer>Sinyal JUAL artinya kondisi sedang melemah, bukan jaminan harga pasti turun. Jangan pakai uang yang tidak siap hilang.<br>Data: Binance Spot publik (read-only). File ini statis, bisa di-host di mana saja: GitHub Pages, Netlify, Vercel.</footer>
+<footer class="max-w-[1280px] mx-auto px-3 sm:px-4 py-3.5 text-mut text-[11px] border-t border-line mt-3 leading-snug">Sinyal JUAL artinya kondisi sedang melemah, bukan jaminan harga pasti turun. Jangan pakai uang yang tidak siap hilang.<br>Data: Binance + Yahoo publik (read-only). Bisa di-host statis atau lewat Docker/Portainer.</footer>
 
 <script>
 const $ = id => document.getElementById(id);
