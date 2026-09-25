@@ -45,6 +45,7 @@ pre { background: #10131a; padding: 12px; border-radius: 8px; overflow: auto; fo
 <div class="row">
 <div><label>Koin</label><br><select id="symbol"><option>BTCUSDT</option><option>ETHUSDT</option><option>SOLUSDT</option><option>BNBUSDT</option></select></div>
 <div><label>Jangka waktu</label><br><select id="interval"><option value="15m">15 menit</option><option value="1h" selected>1 jam</option><option value="4h">4 jam</option><option value="1d">1 hari</option></select></div>
+<div><label>Strategi chart</label><br><select id="strategy"><option value="SMA">SMA + RSI (lama)</option><option value="FREQ" selected>Freq ringan: TEMA + BB + RSI cross (baru)</option></select></div>
 <div><label>&nbsp;</label><br><button id="refresh">Refresh</button></div>
 </div>
 <div style="margin-top:14px"><span id="sig" class="badge wait">Memuat...</span></div>
@@ -54,15 +55,15 @@ pre { background: #10131a; padding: 12px; border-radius: 8px; overflow: auto; fo
 <div class="card">
 <div class="grid">
 <div class="stat"><small>Harga sekarang</small><b id="price">-</b><br><span id="since">-</span></div>
-<div class="stat"><small>Tren pendek (rata-rata 20)</small><b id="sma20">-</b><br><span>Rata-rata harga 20 candle terakhir</span></div>
-<div class="stat"><small>Tren panjang (rata-rata 50)</small><b id="sma50">-</b><br><span>Rata-rata harga 50 candle terakhir</span></div>
+<div class="stat"><small id="trendShortLabel">Tren cepat</small><b id="sma20">-</b><br><span id="trendShortDesc">-</span></div>
+<div class="stat"><small id="trendLongLabel">Tren acuan</small><b id="sma50">-</b><br><span id="trendLongDesc">-</span></div>
 <div class="stat"><small>Kekuatan pasar (RSI)</small><b id="rsi">-</b><br><span id="rsilabel">-</span></div>
 </div>
 <div class="legend">
 <span class="dot" style="background:#22c55e"></span>Candle hijau = harga naik &nbsp;
 <span class="dot" style="background:#ef4444"></span>Candle merah = harga turun &nbsp;
-<span class="dot" style="background:#60a5fa"></span>Garis biru = tren pendek &nbsp;
-<span class="dot" style="background:#f59e0b"></span>Garis oranye = tren panjang<br>
+<span class="dot" style="background:#60a5fa"></span>Garis biru = garis cepat (SMA20 / TEMA9) &nbsp;
+<span class="dot" style="background:#f59e0b"></span>Garis oranye = garis acuan (SMA50 / BB tengah 20)<br>
 Segitiga <b style="color:#4ade80">B</b> = di candle itu muncul tanda mulai menarik untuk beli &nbsp;|&nbsp;
 Segitiga <b style="color:#f87171">J</b> = di candle itu muncul tanda mulai bahaya, waktunya hati-hati/kurangi<br>
 Arahkan kursor ke chart untuk lihat detail tiap candle.
@@ -76,6 +77,7 @@ Arahkan kursor ke chart untuk lihat detail tiap candle.
 <div><label>Modal awal (USDT)</label><br><select id="simCapital"><option>100</option><option selected>1000</option><option>10000</option></select></div>
 <div><label>Koin simulasi</label><br><select id="simSymbol"><option>BTCUSDT</option><option>ETHUSDT</option><option>SOLUSDT</option><option>BNBUSDT</option><option>XRPUSDT</option><option>DOGEUSDT</option><option>ADAUSDT</option><option>AVAXUSDT</option><option>LINKUSDT</option><option>TONUSDT</option></select></div>
 <div><label>Candle simulasi</label><br><select id="simInterval"><option value="15m">15 menit</option><option value="1h" selected>1 jam</option><option value="4h">4 jam</option><option value="1d">1 hari</option></select></div>
+<div><label>Strategi simulasi</label><br><select id="simStrategy"><option value="SMA">SMA + RSI (lama)</option><option value="FREQ" selected>Freq ringan: TEMA + BB + RSI cross (baru)</option></select></div>
 <div><label>Mulai</label><br><input type="date" id="simFrom" value="2026-03-29" min="2024-01-01" max="2026-09-25"></div>
 <div><label>Sampai</label><br><input type="date" id="simTo" value="2026-09-25" min="2024-01-01" max="2026-09-25"></div>
 <div><label>&nbsp;</label><br><button id="simRun">Jalankan simulasi</button></div>
@@ -108,12 +110,70 @@ function rsiAt(a, i, p=14) {
   if (l === 0) return 100;
   return 100 - (100 / (1 + g / l));
 }
+function emaSeries(a, p) {
+  const out = new Array(a.length).fill(null);
+  if (a.length < p) return out;
+  const k = 2 / (p + 1);
+  let ema = 0;
+  for (let s = 0; s < p; s++) ema += a[s];
+  ema /= p;
+  out[p - 1] = ema;
+  for (let i = p; i < a.length; i++) { ema = a[i] * k + ema * (1 - k); out[i] = ema; }
+  return out;
+}
+function temaSeries(a, p=9) {
+  const e1 = emaSeries(a, p);
+  const e1f = e1.map(v => v == null ? NaN : v);
+  // EMA of EMA: replace leading nulls with first valid value to keep alignment
+  let first = e1.findIndex(v => v != null);
+  const fill = e1.map(v => v == null ? e1[first] : v);
+  const e2 = emaSeries(fill, p);
+  const e3 = emaSeries(e2.map(v => v == null ? fill[first] : v), p);
+  return a.map((_, i) => {
+    if (e1[i] == null || e2[i] == null || e3[i] == null) return null;
+    return 3 * e1[i] - 3 * e2[i] + e3[i];
+  });
+}
+function rsiSeries(a, p=14) {
+  const out = new Array(a.length).fill(null);
+  for (let i = p; i < a.length; i++) out[i] = rsiAt(a, i, p);
+  return out;
+}
 function signalAt(closes, i) {
   const s20 = smaAt(closes, i, 20), s50 = smaAt(closes, i, 50), r = rsiAt(closes, i, 14);
-  if (s20 == null || s50 == null || r == null) return { s: 'WAIT', s20, s50, r };
-  if (s20 > s50 && r < 70) return { s: 'BUY', s20, s50, r };
-  if (s20 < s50 && r > 30) return { s: 'SELL', s20, s50, r };
-  return { s: 'WAIT', s20, s50, r };
+  if (s20 == null || s50 == null || r == null) return { s: 'WAIT', s20, s50, r, tag: '' };
+  if (s20 > s50 && r < 70) return { s: 'BUY', s20, s50, r, tag: 'sma_up' };
+  if (s20 < s50 && r > 30) return { s: 'SELL', s20, s50, r, tag: 'sma_down' };
+  return { s: 'WAIT', s20, s50, r, tag: '' };
+}
+// Port ringan freqtrade SampleStrategy (long-only):
+// entry: RSI cross up 30 + TEMA9 <= BB middle + TEMA9 naik + volume > 0
+// exit:  RSI cross up 70 + TEMA9 > BB middle + TEMA9 turun + volume > 0
+function computeSigs(closes, volumes, mode) {
+  if (mode !== 'FREQ') return closes.map((_, i) => signalAt(closes, i));
+  const tema = temaSeries(closes, 9);
+  const rsi = rsiSeries(closes, 14);
+  const n = closes.length;
+  const out = new Array(n);
+  let state = 'WAIT';
+  for (let i = 0; i < n; i++) {
+    const bb = smaAt(closes, i, 20);
+    const t = tema[i], r = rsi[i];
+    const tp = i > 0 ? tema[i - 1] : null;
+    const rp = i > 0 ? rsi[i - 1] : null;
+    const vol = volumes ? volumes[i] : 1;
+    let tag = '';
+    if (t != null && bb != null && r != null && tp != null && rp != null && vol > 0) {
+      const enter = (rp <= 30 && r > 30) && (t <= bb) && (t > tp);
+      const exit = (rp <= 70 && r > 70) && (t > bb) && (t < tp);
+      if (state !== 'BUY' && enter) { state = 'BUY'; tag = 'rsi_cross'; }
+      else if (state === 'BUY' && exit) { state = 'SELL'; tag = 'rsi_too_high'; }
+      else if (state === 'SELL' && enter) { state = 'BUY'; tag = 'rsi_cross'; }
+      else tag = '';
+    }
+    out[i] = { s: state, s20: t, s50: bb, r, tag };
+  }
+  return out;
 }
 
 const TEXT = {
@@ -146,26 +206,32 @@ const TEXT = {
 let candles = [], sigs = [];
 
 async function load() {
-  const sym = $('symbol').value, iv = $('interval').value;
+  const sym = $('symbol').value, iv = $('interval').value, mode = $('strategy').value;
   $('sig').textContent = 'Memuat...'; $('sig').className = 'badge wait';
   try {
     const res = await fetch(`https://api.binance.com/api/v3/klines?symbol=${sym}&interval=${iv}&limit=100`);
     const raw = await res.json();
-    candles = raw.map(r => ({ t: r[0], o: +r[1], h: +r[2], l: +r[3], c: +r[4] }));
-    const closes = candles.map(k => k.c);
-    sigs = closes.map((_, i) => signalAt(closes, i));
-    render(sym, iv);
+    candles = raw.map(r => ({ t: r[0], o: +r[1], h: +r[2], l: +r[3], c: +r[4], v: +r[5] }));
+    const closes = candles.map(k => k.c), vols = candles.map(k => k.v);
+    sigs = computeSigs(closes, vols, mode);
+    render(sym, iv, mode);
   } catch (e) {
     $('sig').textContent = 'Gagal ambil data';
     $('explain').innerHTML = '<li>Cek koneksi internet lalu klik Refresh.</li>';
   }
 }
 
-function render(sym, iv) {
+function render(sym, iv, mode) {
   const last = candles.length - 1, cur = sigs[last];
   const t = TEXT[cur.s];
   const el = $('sig'); el.textContent = t.badge; el.className = 'badge ' + t.cls;
-  $('explain').innerHTML = t.points.map(p => `<li>${p}</li>`).join('');
+  $('explain').innerHTML = t.points.map(p => `<li>${p}</li>`).join('') + (cur.tag ? `<li><b>Alasan sinyal ini:</b> <code>${cur.tag}</code></li>` : '');
+
+  const isFreq = mode === 'FREQ';
+  $('trendShortLabel').textContent = isFreq ? 'Garis cepat (TEMA 9)' : 'Tren pendek (rata-rata 20)';
+  $('trendShortDesc').textContent = isFreq ? 'Ikuti harga lebih cepat dari rata-rata biasa' : 'Rata-rata harga 20 candle terakhir';
+  $('trendLongLabel').textContent = isFreq ? 'Garis tengah (rata-rata 20)' : 'Tren panjang (rata-rata 50)';
+  $('trendLongDesc').textContent = isFreq ? 'Tengah pita harga 20 candle terakhir' : 'Rata-rata harga 50 candle terakhir';
 
   const price = candles[last].c;
   $('price').textContent = price.toLocaleString('en-US');
@@ -181,17 +247,17 @@ function render(sym, iv) {
   const changes = [];
   for (let i = 1; i < candles.length; i++) {
     if (sigs[i].s !== sigs[i-1].s && sigs[i].s !== 'WAIT') {
-      changes.push({ i, s: sigs[i].s, t: candles[i].t, p: candles[i].c });
+      changes.push({ i, s: sigs[i].s, t: candles[i].t, p: candles[i].c, tag: sigs[i].tag || '' });
     }
   }
   const recent = changes.slice(-4).reverse();
   $('hist').innerHTML = recent.length
     ? '<b>Riwayat sinyal terakhir:</b><br>' + recent.map(c =>
-      `${c.s === 'BUY' ? 'Tanda <b style="color:#4ade80">B</b> (mulai menarik)' : 'Tanda <b style="color:#f87171">J</b> (mulai bahaya)'} - ${fmtT(c.t)} di harga <code>${c.p.toLocaleString('en-US')}</code>`
+      `${c.s === 'BUY' ? 'Tanda <b style="color:#4ade80">B</b> (mulai menarik)' : 'Tanda <b style="color:#f87171">J</b> (mulai bahaya)'} - ${fmtT(c.t)} di harga <code>${c.p.toLocaleString('en-US')}</code>${c.tag ? ` <code>${c.tag}</code>` : ''}`
     ).join('<br>')
     : 'Belum ada perubahan sinyal dalam 100 candle terakhir.';
 
-  $('json').textContent = JSON.stringify({ symbol: sym, interval: iv, signal: cur.s, price, sma20: cur.s20, sma50: cur.s50, rsi14: cur.r }, null, 2);
+  $('json').textContent = JSON.stringify({ symbol: sym, interval: iv, strategy: mode, signal: cur.s, tag: cur.tag || '', price, fast: cur.s20, slow: cur.s50, rsi14: cur.r }, null, 2);
   draw();
 }
 
@@ -266,10 +332,10 @@ function draw() {
     const px = (e.clientX - r.left) * (c.width / r.width);
     let j = Math.floor(px / cw);
     j = Math.max(0, Math.min(vis.length - 1, j));
-    const k = vis[j], s = vs[j].s;
+    const k = vis[j], s = vs[j].s, tg = vs[j].tag || '';
     const tip = $('tip');
     tip.style.display = 'block';
-    tip.innerHTML = `${fmtT(k.t)}<br>O: ${k.o.toLocaleString('en-US')} H: ${k.h.toLocaleString('en-US')}<br>L: ${k.l.toLocaleString('en-US')} C: ${k.c.toLocaleString('en-US')}<br>Sinyal saat itu: <b>${s === 'BUY' ? 'Menarik (B)' : s === 'SELL' ? 'Bahaya (J)' : 'Tunggu'}</b>`;
+    tip.innerHTML = `${fmtT(k.t)}<br>O: ${k.o.toLocaleString('en-US')} H: ${k.h.toLocaleString('en-US')}<br>L: ${k.l.toLocaleString('en-US')} C: ${k.c.toLocaleString('en-US')}<br>Sinyal saat itu: <b>${s === 'BUY' ? 'Menarik (B)' : s === 'SELL' ? 'Bahaya (J)' : 'Tunggu'}</b>${tg ? `<br>Alasan: <code>${tg}</code>` : ''}`;
     const tx = Math.min(r.width - 190, Math.max(4, (j * cw + cw) * (r.width / c.width)));
     tip.style.left = tx + 'px'; tip.style.top = '8px';
   };
@@ -279,6 +345,7 @@ function draw() {
 $('refresh').onclick = load;
 $('symbol').onchange = load;
 $('interval').onchange = load;
+$('strategy').onchange = load;
 $('simRun').onclick = runSim;
 load(); setInterval(load, 60000);
 
@@ -290,7 +357,7 @@ async function fetchRange(sym, iv, fromMs, toMs) {
     const res = await fetch(url);
     const batch = await res.json();
     if (!Array.isArray(batch) || !batch.length) break;
-    for (const r of batch) out.push({ t: r[0], o: +r[1], h: +r[2], l: +r[3], c: +r[4] });
+    for (const r of batch) out.push({ t: r[0], o: +r[1], h: +r[2], l: +r[3], c: +r[4], v: +r[5] });
     cur = batch[batch.length-1][0] + 1;
     if (batch.length < 1000) break;
     if (out.length > 6000) break;
@@ -300,7 +367,8 @@ async function fetchRange(sym, iv, fromMs, toMs) {
 }
 
 async function runSim() {
-  const sym = $('simSymbol').value, iv = $('simInterval').value;
+  const sym = $('simSymbol').value, iv = $('simInterval').value, mode = $('simStrategy').value;
+  const simName = $('simStrategy').selectedOptions[0].text.split(':')[0];
   const ivLabel = $('simInterval').selectedOptions[0].text;
   const cap = parseFloat($('simCapital').value) || 1000;
   const fromMs = new Date($('simFrom').value + 'T00:00:00Z').getTime();
@@ -315,12 +383,14 @@ async function runSim() {
   try {
     const ks = await fetchRange(sym, iv, fromMs, toMs);
     if (ks.length < 60) { box.textContent = 'Data kurang dari 60 candle, perlebar rentangnya.'; return; }
-    const closes = ks.map(k => k.c);
+    const closes = ks.map(k => k.c), vols = ks.map(k => k.v || 0);
+    const simSigs = computeSigs(closes, vols, mode);
     const FEE = 0.001;
     let cash = cap, pos = 0, entry = 0, trades = 0, wins = 0, peak = cap, maxDd = 0;
     const eq = [];
-    for (let i = 50; i < closes.length; i++) {
-      const s = signalAt(closes, i).s, p = closes[i];
+    const startI = mode === 'FREQ' ? 30 : 50;
+    for (let i = startI; i < closes.length; i++) {
+      const s = simSigs[i].s, p = closes[i];
       if (s === 'BUY' && pos === 0) { pos = (cash * (1 - FEE)) / p; entry = p; cash = 0; }
       else if (s === 'SELL' && pos > 0) {
         cash = pos * p * (1 - FEE);
@@ -340,7 +410,7 @@ async function runSim() {
       eq.push(cash);
     }
     const retPct = (cash / cap - 1) * 100;
-    const bhPct = (closes[closes.length-1] / closes[50] - 1) * 100;
+    const bhPct = (closes[closes.length-1] / closes[startI] - 1) * 100;
     const winRate = trades ? wins / trades * 100 : 0;
     const avgPct = trades ? retPct / trades : 0;
     let verdict, why;
@@ -355,10 +425,10 @@ async function runSim() {
       why = `Win rate lumayan (${winRate.toFixed(1)}%) tapi rata-rata per transaksi cuma ${avgPct >= 0 ? '+' : ''}${avgPct.toFixed(2)}%, jadi kalah dari hold.`;
     }
     box.innerHTML =
-      `Periode <b>${$('simFrom').value} sampai ${$('simTo').value}</b> - dari <b>${ks.length}</b> candle ${sym} (${ivLabel}): modal <b>$${cap.toLocaleString()}</b> jadi <b>$${cash.toLocaleString('en-US',{maximumFractionDigits:2})} (${retPct >= 0 ? '+' : ''}${retPct.toFixed(1)}%)</b>.<br>` +
+      `Strategi <b>${simName}</b> - periode <b>${$('simFrom').value} sampai ${$('simTo').value}</b> - dari <b>${ks.length}</b> candle ${sym} (${ivLabel}): modal <b>$${cap.toLocaleString()}</b> jadi <b>$${cash.toLocaleString('en-US',{maximumFractionDigits:2})} (${retPct >= 0 ? '+' : ''}${retPct.toFixed(1)}%)</b>.<br>` +
       `Buy di awal lalu hold sampai akhir: <b>${bhPct >= 0 ? '+' : ''}${bhPct.toFixed(1)}%</b>. Transaksi: <b>${trades}</b>, menang <b>${winRate.toFixed(1)}%</b>. Rata-rata per transaksi <b>${avgPct >= 0 ? '+' : ''}${avgPct.toFixed(2)}%</b>. Turun terdalam: <b>${(maxDd*100).toFixed(1)}%</b>.<br>` +
       `<span style="color:#e8eaf0"><b>Artinya:</b> ${verdict} ${why}</span> <span style="font-size:12px">Fee 0,1% per sisi.</span>`;
-    $('simMeta').textContent = `Terakhir dihitung ${new Date().toLocaleString('id-ID')} untuk ${sym} ${$('simFrom').value} -> ${$('simTo').value}.`;
+    $('simMeta').textContent = `Terakhir dihitung ${new Date().toLocaleString('id-ID')} untuk ${sym} ${$('simFrom').value} -> ${$('simTo').value} strategi ${simName}.`;
     drawSim(eq, cap);
   } catch (e) {
     box.textContent = 'Gagal hitung simulasi, cek koneksi lalu coba lagi.';
