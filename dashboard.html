@@ -45,7 +45,7 @@ pre { background: #10131a; padding: 12px; border-radius: 8px; overflow: auto; fo
 <div class="row">
 <div><label>Koin</label><br><select id="symbol"><option>BTCUSDT</option><option>ETHUSDT</option><option>SOLUSDT</option><option>BNBUSDT</option></select></div>
 <div><label>Jangka waktu</label><br><select id="interval"><option value="15m">15 menit</option><option value="1h" selected>1 jam</option><option value="4h">4 jam</option><option value="1d">1 hari</option></select></div>
-<div><label>Strategi chart</label><br><select id="strategy"><option value="SMA">SMA + RSI (lama)</option><option value="FREQ">Freq v1: TEMA + BB + RSI cross</option><option value="FREQ2" selected>Freq v2: ikut tren + keluar cepat (baru)</option></select></div>
+<div><label>Strategi chart</label><br><select id="strategy"><option value="SMA">SMA + RSI (lama)</option><option value="FREQ">Freq v1: TEMA + BB + RSI cross</option><option value="FREQ2">Freq v2: ikut tren + keluar cepat</option><option value="FREQ3" selected>Freq v3: momentum + tahan tren (baru)</option></select></div>
 <div><label>&nbsp;</label><br><button id="refresh">Refresh</button></div>
 </div>
 <div style="margin-top:14px"><span id="sig" class="badge wait">Memuat...</span></div>
@@ -77,7 +77,7 @@ Arahkan kursor ke chart untuk lihat detail tiap candle.
 <div><label>Modal awal (USDT)</label><br><select id="simCapital"><option>100</option><option selected>1000</option><option>10000</option></select></div>
 <div><label>Koin simulasi</label><br><select id="simSymbol"><option>BTCUSDT</option><option>ETHUSDT</option><option>SOLUSDT</option><option>BNBUSDT</option><option>XRPUSDT</option><option>DOGEUSDT</option><option>ADAUSDT</option><option>AVAXUSDT</option><option>LINKUSDT</option><option>TONUSDT</option></select></div>
 <div><label>Candle simulasi</label><br><select id="simInterval"><option value="15m">15 menit</option><option value="1h" selected>1 jam</option><option value="4h">4 jam</option><option value="1d">1 hari</option></select></div>
-<div><label>Strategi simulasi</label><br><select id="simStrategy"><option value="SMA">SMA + RSI (lama)</option><option value="FREQ">Freq v1: TEMA + BB + RSI cross</option><option value="FREQ2" selected>Freq v2: ikut tren + keluar cepat (baru)</option></select></div>
+<div><label>Strategi simulasi</label><br><select id="simStrategy"><option value="SMA">SMA + RSI (lama)</option><option value="FREQ">Freq v1: TEMA + BB + RSI cross</option><option value="FREQ2">Freq v2: ikut tren + keluar cepat</option><option value="FREQ3" selected>Freq v3: momentum + tahan tren (baru)</option></select></div>
 <div><label>Batas rugi (stoploss)</label><br><select id="simSL"><option value="0">Tanpa stoploss</option><option value="0.03">3% dari harga beli</option><option value="0.05">5% dari harga beli</option><option value="0.10">10% dari harga beli</option><option value="0.20" selected>20% dari harga beli (longgar)</option></select></div>
 <div><label>Target untung (minimal ROI)</label><br><select id="simROI"><option value="0">Tanpa target</option><option value="STD" selected>Standar: 4% lalu 2% lalu 1%</option><option value="FAST">Cepat: 2% langsung kunci</option><option value="SLOW">Sabar: 6% lalu 3%</option></select></div>
 <div><label>Mulai</label><br><input type="date" id="simFrom" value="2026-03-29" min="2024-01-01" max="2026-09-25"></div>
@@ -154,8 +154,12 @@ function signalAt(closes, i) {
 // FREQ2: ikut tren + keluar cepat.
 // entry: RSI 35-65 + TEMA9 > BB middle + harga > SMA50 + TEMA9 naik + volume > 0
 // exit:  RSI > 72 atau RSI < 40 atau TEMA9 turun 2 candle beruntun atau hold > 20 candle
+// FREQ3: momentum + tahan tren (perbaikan v2 yang overtrading).
+// entry: RSI cross-up 55 + harga > SMA50 + TEMA9 > SMA20 + TEMA9 naik + jeda 5 candle setelah jual
+// exit:  harga < SMA20 atau RSI < 45 atau TEMA9 turun 3 candle beruntun (tanpa timeout)
 function computeSigs(closes, volumes, mode) {
-  if (mode !== 'FREQ' && mode !== 'FREQ2') return closes.map((_, i) => signalAt(closes, i));
+  if (mode !== 'FREQ' && mode !== 'FREQ2' && mode !== 'FREQ3') return closes.map((_, i) => signalAt(closes, i));
+  if (mode === 'FREQ3') return computeFreq3(closes, volumes);
   if (mode === 'FREQ2') return computeFreq2(closes, volumes);
   const tema = temaSeries(closes, 9);
   const rsi = rsiSeries(closes, 14);
@@ -178,6 +182,39 @@ function computeSigs(closes, volumes, mode) {
       else tag = '';
     }
     out[i] = { s: state, s20: t, s50: bb, r, tag };
+  }
+  return out;
+}
+function computeFreq3(closes, volumes) {
+  const tema = temaSeries(closes, 9);
+  const rsi = rsiSeries(closes, 14);
+  const n = closes.length;
+  const out = new Array(n);
+  let state = 'WAIT', tag = '', lastSell = -100;
+  for (let i = 0; i < n; i++) {
+    const sma20 = smaAt(closes, i, 20);
+    const sma50 = smaAt(closes, i, 50);
+    const t = tema[i], r = rsi[i];
+    const tp = i > 0 ? tema[i - 1] : null;
+    const tp2 = i > 1 ? tema[i - 2] : null;
+    const tp3 = i > 2 ? tema[i - 3] : null;
+    const rp = i > 0 ? rsi[i - 1] : null;
+    const vol = volumes ? volumes[i] : 1;
+    tag = '';
+    if (t != null && sma20 != null && sma50 != null && r != null && rp != null && tp != null && tp2 != null && tp3 != null && vol > 0) {
+      if (state !== 'BUY') {
+        const momentum = rp <= 55 && r > 55 && closes[i] > sma50 && t > sma20 && t > tp && (i - lastSell >= 5);
+        if (momentum) { state = 'BUY'; tag = 'momentum'; }
+      } else {
+        const temaDown3 = t < tp && tp < tp2 && tp2 < tp3;
+        const patah = closes[i] < sma20;
+        const lemes = r < 45;
+        if (patah) { state = 'SELL'; tag = 'patah_sma20'; lastSell = i; }
+        else if (lemes) { state = 'SELL'; tag = 'lemes'; lastSell = i; }
+        else if (temaDown3) { state = 'SELL'; tag = 'trend_patah3'; lastSell = i; }
+      }
+    }
+    out[i] = { s: state, s20: t, s50: sma20, r, tag };
   }
   return out;
 }
@@ -267,11 +304,11 @@ function render(sym, iv, mode) {
   const el = $('sig'); el.textContent = t.badge; el.className = 'badge ' + t.cls;
   $('explain').innerHTML = t.points.map(p => `<li>${p}</li>`).join('') + (cur.tag ? `<li><b>Alasan sinyal ini:</b> <code>${cur.tag}</code></li>` : '');
 
-  const isFreq = mode === 'FREQ' || mode === 'FREQ2';
+  const isFreq = mode === 'FREQ' || mode === 'FREQ2' || mode === 'FREQ3';
   $('trendShortLabel').textContent = isFreq ? 'Garis cepat (TEMA 9)' : 'Tren pendek (rata-rata 20)';
   $('trendShortDesc').textContent = isFreq ? 'Ikuti harga lebih cepat dari rata-rata biasa' : 'Rata-rata harga 20 candle terakhir';
-  $('trendLongLabel').textContent = mode === 'FREQ2' ? 'Filter tren (rata-rata 50)' : isFreq ? 'Garis tengah (rata-rata 20)' : 'Tren panjang (rata-rata 50)';
-  $('trendLongDesc').textContent = mode === 'FREQ2' ? 'Beli cuma kalau harga di atas garis ini' : isFreq ? 'Tengah pita harga 20 candle terakhir' : 'Rata-rata harga 50 candle terakhir';
+  $('trendLongLabel').textContent = mode === 'FREQ' ? 'Garis tengah (rata-rata 20)' : mode === 'FREQ2' ? 'Filter tren (rata-rata 50)' : mode === 'FREQ3' ? 'Garis tren (rata-rata 20)' : 'Tren panjang (rata-rata 50)';
+  $('trendLongDesc').textContent = mode === 'FREQ' ? 'Tengah pita harga 20 candle terakhir' : mode === 'FREQ2' ? 'Beli cuma kalau harga di atas garis ini' : mode === 'FREQ3' ? 'Jual kalau harga turun di bawah garis ini' : 'Rata-rata harga 50 candle terakhir';
 
   const price = candles[last].c;
   $('price').textContent = price.toLocaleString('en-US');
@@ -438,7 +475,7 @@ async function runSim() {
     const FEE = 0.001;
     let cash = cap, pos = 0, entry = 0, entryI = 0, trades = 0, wins = 0, slHits = 0, roiHits = 0, peak = cap, maxDd = 0;
     const eq = [];
-    const startI = mode === 'SMA' ? 50 : mode === 'FREQ2' ? 55 : 30;
+    const startI = mode === 'SMA' ? 50 : mode === 'FREQ3' ? 55 : mode === 'FREQ2' ? 55 : 30;
     const doExit = (p, tag) => {
       cash = pos * p * (1 - FEE);
       const ret = (p * (1 - FEE)) / (entry * (1 + FEE)) - 1;
