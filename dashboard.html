@@ -132,7 +132,12 @@ Arahkan kursor ke chart untuk lihat detail tiap candle.
 <button id="preset1d" class="preset" style="background:#123d2a;border-color:#1f7a4d">Paket 1D juara (Freq v1 +26,3%)</button>
 <button id="preset4h" class="preset" style="background:#123d2a;border-color:#1f7a4d">Paket 4H juara (SMA +31,0%)</button>
 <button id="presetHold" class="preset" style="background:#232b3b">Paket 1H: hold saja</button>
+<button id="presetUS" class="preset" style="background:#1e2a4a;border-color:#3b82f6">Paket Saham AS (daily)</button>
+<button id="presetIN" class="preset" style="background:#1e2a4a;border-color:#3b82f6">Paket Saham India (daily)</button>
+<button id="presetID" class="preset" style="background:#1e2a4a;border-color:#3b82f6">Paket Saham ID (daily)</button>
+<button id="presetGold" class="preset" style="background:#3a2f10;border-color:#b98a1d">Paket Emas (daily)</button>
 </div>
+<div class="warnbox" id="mktBox" style="color:#7dd3fc"></div>
 <div class="warnbox" id="simWarn"></div>
 <div class="row">
 <div><label>Modal awal (USDT)</label><br><select id="simCapital"><option>100</option><option selected>1000</option><option>10000</option></select></div>
@@ -560,7 +565,72 @@ const applyPreset = (iv, strat) => {
   $('simInterval').onchange();
   load();
 };
-$('preset1d').onclick = () => { applyPreset('1d', 'FREQ'); };
+// Jam bursa (WIB): AS 20.30-03.00 (Senin-Jumat), India 10.45-17.00, ID 09.00-15.15 (Jumat beda), Kripto/Emas token 24/7.
+const MKTS = [
+  { id: 'US', label: 'AS (NYSE/Nasdaq)', days: [1,2,3,4,5], open: '20:30', close: '03:00', note: 'Senin-Jumat 20.30-03.00 WIB. Sab-Ming libur.' },
+  { id: 'IN', label: 'India (NSE)', days: [1,2,3,4,5], open: '10:45', close: '17:00', note: 'Senin-Jumat 10.45-17.00 WIB. Sab-Ming libur.' },
+  { id: 'ID', label: 'Indonesia (IDX)', days: [1,2,3,4,5], open: '09:00', close: '15:15', note: 'Senin-Kamis 09.00-15.15, Jumat 09.00-11.30 + 14.00-15.15. Sab-Ming libur.' },
+];
+function mktKind(sym) {
+  if (/\.NS$/.test(sym)) return 'IN';
+  if (/\.JK$/.test(sym)) return 'ID';
+  if (/^(NVDA|AAPL|MSFT|AMZN|GOOGL|META|AVGO|TSLA|BRK-B|JPM)$/.test(sym) || sym === 'GC=F') return 'US';
+  return 'CRYPTO';
+}
+function mktStatus(kind) {
+  if (kind === 'CRYPTO') return 'Buka 24/7 (kripto & emas token tidak pernah tutup).';
+  const m = MKTS.find(x => x.id === kind);
+  const now = new Date();
+  const day = now.getDay();
+  const hhmm = now.toTimeString().slice(0, 5);
+  const isDay = m.days.includes(day);
+  let openNow = false;
+  if (isDay) {
+    if (m.open < m.close) openNow = hhmm >= m.open && hhmm < m.close;
+    else openNow = hhmm >= m.open || hhmm < m.close; // lewat tengah malam (AS)
+  }
+  return `${m.label}: ${openNow ? 'BUKA sekarang' : 'TUTUP sekarang'} — ${m.note} Sekarang ${hhmm} WIB.`;
+}
+function refreshMktBox() {
+  const kindA = mktKind($('symbol').value), kindB = mktKind($('simSymbol').value);
+  const a = mktStatus(kindA);
+  const b = kindA === kindB ? '' : `<br>Simulasi (${$('simSymbol').value}): ${mktStatus(kindB)}`;
+  $('mktBox').innerHTML = `Chart (${$('symbol').value}): ${a}${b}<br><span style="color:#9aa3b8">Saham cuma gerak saat bursa buka. Sinyal di luar jam bursa pakai candle terakhir yang tersedia.</span>`;
+}
+const applyStockPreset = (sym, label) => {
+  $('symbol').value = sym;
+  $('simSymbol').value = sym;
+  $('interval').value = '1d';
+  $('simInterval').value = '1d';
+  $('strategy').value = 'SMA';
+  $('simStrategy').value = 'SMA';
+  $('simSL').value = '0.10';
+  $('simTrail').value = '0.10';
+  $('simROI').value = 'SLOW';
+  $('simWarn').textContent = `${label}: saham geraknya pelan + ada gap tiap buka pasar, jadi pakai SMA daily + SL/trailing 10% + target Sabar. Bukan preset juara backtest (itu dari BTC), tapi setting aman buat mulai.`;
+  refreshMktBox();
+  load();
+};
+$('presetUS').onclick = () => applyStockPreset('NVDA', 'Paket Saham AS');
+$('presetIN').onclick = () => applyStockPreset('RELIANCE.NS', 'Paket Saham India');
+$('presetID').onclick = () => applyStockPreset('BBCA.JK', 'Paket Saham ID');
+$('presetGold').onclick = () => {
+  $('symbol').value = 'PAXGUSDT';
+  $('simSymbol').value = 'PAXGUSDT';
+  $('interval').value = '1d';
+  $('simInterval').value = '1d';
+  $('strategy').value = 'FREQ';
+  $('simStrategy').value = 'FREQ';
+  $('simSL').value = '0.10';
+  $('simTrail').value = '0.10';
+  $('simROI').value = 'SLOW';
+  $('simWarn').textContent = 'Paket Emas: PAXG ikut harga emas 24/7, volatilitasnya kecil. Pakai Freq v1 daily + SL/trailing 10% + target Sabar.';
+  refreshMktBox();
+  load();
+};
+$('symbol').addEventListener('change', refreshMktBox);
+$('simSymbol').addEventListener('change', refreshMktBox);
+refreshMktBox(); setInterval(refreshMktBox, 60000);
 $('preset4h').onclick = () => { applyPreset('4h', 'SMA'); };
 $('presetHold').onclick = () => {
   $('simWarn').textContent = 'Paket 1H: backtest bilang buy lalu hold (+23,7%) menang atas sinyal (+11,7%). Jadi tidak perlu ikut sinyal di 1 jam, beli di awal lalu tahan.';
