@@ -78,7 +78,25 @@ footer { max-width: 1280px; margin: 0 auto; padding: 20px; color: var(--mut); fo
 </div>
 <div>
 <div class="row">
-<div><label>Koin</label><br><select id="symbol"><option>BTCUSDT</option><option>ETHUSDT</option><option>SOLUSDT</option><option>BNBUSDT</option></select></div>
+<div><label>Aset</label><br><select id="symbol">
+<optgroup label="Kripto 10 (Binance)">
+<option>BTCUSDT</option><option>ETHUSDT</option><option>SOLUSDT</option><option>BNBUSDT</option><option>XRPUSDT</option><option>DOGEUSDT</option><option>ADAUSDT</option><option>AVAXUSDT</option><option>LINKUSDT</option><option>TONUSDT</option>
+</optgroup>
+<optgroup label="Emas (Binance + Yahoo)">
+<option value="PAXGUSDT">Emas PAXG (PAXGUSDT)</option>
+<option value="XAUTUSDT">Emas XAUT (XAUTUSDT)</option>
+<option value="GC=F">Emas Futures (GC=F)</option>
+</optgroup>
+<optgroup label="Saham AS 10 (Yahoo)">
+<option value="NVDA">NVIDIA (NVDA)</option><option value="AAPL">Apple (AAPL)</option><option value="MSFT">Microsoft (MSFT)</option><option value="AMZN">Amazon (AMZN)</option><option value="GOOGL">Google (GOOGL)</option><option value="META">Meta (META)</option><option value="AVGO">Broadcom (AVGO)</option><option value="TSLA">Tesla (TSLA)</option><option value="BRK-B">Berkshire (BRK-B)</option><option value="JPM">JPMorgan (JPM)</option>
+</optgroup>
+<optgroup label="Saham India 10 (Yahoo)">
+<option value="RELIANCE.NS">Reliance (RELIANCE.NS)</option><option value="HDFCBANK.NS">HDFC Bank (HDFCBANK.NS)</option><option value="BHARTIARTL.NS">Bharti Airtel (BHARTIARTL.NS)</option><option value="TCS.NS">TCS (TCS.NS)</option><option value="ICICIBANK.NS">ICICI Bank (ICICIBANK.NS)</option><option value="INFY.NS">Infosys (INFY.NS)</option><option value="SBIN.NS">SBI (SBIN.NS)</option><option value="ITC.NS">ITC (ITC.NS)</option><option value="LT.NS">L&T (LT.NS)</option><option value="HINDUNILVR.NS">HUL (HINDUNILVR.NS)</option>
+</optgroup>
+<optgroup label="Saham Indonesia 10 (Yahoo)">
+<option value="BBCA.JK">BBCA</option><option value="BBRI.JK">BBRI</option><option value="BMRI.JK">BMRI</option><option value="TLKM.JK">TLKM</option><option value="ASII.JK">ASII</option><option value="UNTR.JK">UNTR</option><option value="INDF.JK">INDF</option><option value="KLBF.JK">KLBF</option><option value="SMGR.JK">SMGR</option><option value="ADRO.JK">ADRO</option>
+</optgroup>
+</select></div>
 <div><label>Jangka waktu</label><br><select id="interval"><option value="15m">15 menit</option><option value="1h" selected>1 jam</option><option value="4h">4 jam</option><option value="1d">1 hari</option></select></div>
 <div><label>Strategi chart</label><br><select id="strategy"><option value="SMA">SMA + RSI (lama)</option><option value="FREQ">Freq v1: TEMA + BB + RSI cross</option><option value="FREQ2">Freq v2: ikut tren + keluar cepat</option><option value="FREQ3" selected>Freq v3: momentum + tahan tren (baru)</option></select></div>
 <div><label>&nbsp;</label><br><button id="refresh">Refresh</button></div>
@@ -118,7 +136,25 @@ Arahkan kursor ke chart untuk lihat detail tiap candle.
 <div class="warnbox" id="simWarn"></div>
 <div class="row">
 <div><label>Modal awal (USDT)</label><br><select id="simCapital"><option>100</option><option selected>1000</option><option>10000</option></select></div>
-<div><label>Koin simulasi</label><br><select id="simSymbol"><option>BTCUSDT</option><option>ETHUSDT</option><option>SOLUSDT</option><option>BNBUSDT</option><option>XRPUSDT</option><option>DOGEUSDT</option><option>ADAUSDT</option><option>AVAXUSDT</option><option>LINKUSDT</option><option>TONUSDT</option></select></div>
+<div><label>Aset simulasi</label><br><select id="simSymbol">
+<optgroup label="Kripto 10 (Binance)">
+<option>BTCUSDT</option><option>ETHUSDT</option><option>SOLUSDT</option><option>BNBUSDT</option><option>XRPUSDT</option><option>DOGEUSDT</option><option>ADAUSDT</option><option>AVAXUSDT</option><option>LINKUSDT</option><option>TONUSDT</option>
+</optgroup>
+<optgroup label="Emas (Binance + Yahoo)">
+<option value="PAXGUSDT">Emas PAXG (PAXGUSDT)</option>
+<option value="XAUTUSDT">Emas XAUT (XAUTUSDT)</option>
+<option value="GC=F">Emas Futures (GC=F)</option>
+</optgroup>
+<optgroup label="Saham AS 10 (Yahoo)">
+<option value="NVDA">NVIDIA (NVDA)</option><option value="AAPL">Apple (AAPL)</option><option value="MSFT">Microsoft (MSFT)</option><option value="AMZN">Amazon (AMZN)</option><option value="GOOGL">Google (GOOGL)</option><option value="META">Meta (META)</option><option value="AVGO">Broadcom (AVGO)</option><option value="TSLA">Tesla (TSLA)</option><option value="BRK-B">Berkshire (BRK-B)</option><option value="JPM">JPMorgan (JPM)</option>
+</optgroup>
+<optgroup label="Saham India 10 (Yahoo)">
+<option value="RELIANCE.NS">Reliance (RELIANCE.NS)</option><option value="HDFCBANK.NS">HDFC Bank (HDFCBANK.NS)</option><option value="BHARTIARTL.NS">Bharti Airtel (BHARTIARTL.NS)</option><option value="TCS.NS">TCS (TCS.NS)</option><option value="ICICIBANK.NS">ICICI Bank (ICICIBANK.NS)</option><option value="INFY.NS">Infosys (INFY.NS)</option><option value="SBIN.NS">SBI (SBIN.NS)</option><option value="ITC.NS">ITC (ITC.NS)</option><option value="LT.NS">L&T (LT.NS)</option><option value="HINDUNILVR.NS">HUL (HINDUNILVR.NS)</option>
+</optgroup>
+<optgroup label="Saham Indonesia 10 (Yahoo)">
+<option value="BBCA.JK">BBCA</option><option value="BBRI.JK">BBRI</option><option value="BMRI.JK">BMRI</option><option value="TLKM.JK">TLKM</option><option value="ASII.JK">ASII</option><option value="UNTR.JK">UNTR</option><option value="INDF.JK">INDF</option><option value="KLBF.JK">KLBF</option><option value="SMGR.JK">SMGR</option><option value="ADRO.JK">ADRO</option>
+</optgroup>
+</select></div>
 <div><label>Candle simulasi</label><br><select id="simInterval"><option value="15m">15 menit</option><option value="1h" selected>1 jam</option><option value="4h">4 jam</option><option value="1d">1 hari</option></select></div>
 <div><label>Strategi simulasi</label><br><select id="simStrategy"><option value="SMA">SMA + RSI (lama)</option><option value="FREQ">Freq v1: TEMA + BB + RSI cross</option><option value="FREQ2">Freq v2: ikut tren + keluar cepat</option><option value="FREQ3" selected>Freq v3: momentum + tahan tren (baru)</option></select></div>
 <div><label>Batas rugi (stoploss)</label><br><select id="simSL"><option value="0">Tanpa stoploss</option><option value="0.03">3% dari harga beli</option><option value="0.05">5% dari harga beli</option><option value="0.10">10% dari harga beli</option><option value="0.20" selected>20% dari harga beli (longgar)</option></select></div>
@@ -327,13 +363,49 @@ const TEXT = {
 
 let candles = [], sigs = [];
 
+const isBinance = s => /USDT$/.test(s);
+const YH_SRC = () => false; // diisi true saat dipanggil dari server proxy
+
+async function yahooCandles(sym, iv) {
+  const map = { '15m': '15m', '1h': '60m', '4h': '60m', '1d': '1d' };
+  const yiv = map[iv] || '1d';
+  const rng = iv === '1d' ? '6mo' : '3mo';
+  const base = (typeof location !== 'undefined' && location.port) ? '' : 'http://127.0.0.1:8080';
+  const res = await fetch(`${base}/api/yahoo?symbol=${encodeURIComponent(sym)}&interval=${yiv}&range=${rng}`);
+  const j = await res.json();
+  const r = j.chart && j.chart.result && j.chart.result[0];
+  if (!r || !r.timestamp) throw new Error('no yahoo data');
+  const q = r.indicators.quote[0];
+  let out = r.timestamp.map((t, i) => ({
+    t: t * 1000,
+    o: q.open[i], h: q.high[i], l: q.low[i], c: q.close[i], v: q.volume[i] || 0
+  })).filter(k => k.o != null && k.c != null);
+  if (iv === '4h') out = aggCandles(out, 4 * 36e5);
+  return out.slice(-120);
+}
+
+function aggCandles(ks, ms) {
+  const out = [];
+  for (const k of ks) {
+    const b = Math.floor(k.t / ms) * ms;
+    const last = out[out.length - 1];
+    if (!last || last.t !== b) out.push({ t: b, o: k.o, h: k.h, l: k.l, c: k.c, v: k.v || 0 });
+    else { last.h = Math.max(last.h, k.h); last.l = Math.min(last.l, k.l); last.c = k.c; last.v += k.v || 0; }
+  }
+  return out;
+}
+
 async function load() {
   const sym = $('symbol').value, iv = $('interval').value, mode = $('strategy').value;
   $('sig').textContent = 'Memuat...'; $('sig').className = 'badge wait';
   try {
-    const res = await fetch(`https://data-api.binance.vision/api/v3/klines?symbol=${sym}&interval=${iv}&limit=100`);
-    const raw = await res.json();
-    candles = raw.map(r => ({ t: r[0], o: +r[1], h: +r[2], l: +r[3], c: +r[4], v: +r[5] }));
+    if (isBinance(sym)) {
+      const res = await fetch(`https://data-api.binance.vision/api/v3/klines?symbol=${sym}&interval=${iv}&limit=100`);
+      const raw = await res.json();
+      candles = raw.map(r => ({ t: r[0], o: +r[1], h: +r[2], l: +r[3], c: +r[4], v: +r[5] }));
+    } else {
+      candles = await yahooCandles(sym, iv);
+    }
     const closes = candles.map(k => k.c), vols = candles.map(k => k.v);
     sigs = computeSigs(closes, vols, mode);
     render(sym, iv, mode);
@@ -497,7 +569,26 @@ $('presetHold').onclick = () => {
 };
 load(); setInterval(load, 60000);
 
+async function yahooRange(sym, iv, fromMs, toMs) {
+  const map = { '15m': '15m', '1h': '60m', '4h': '60m', '1d': '1d' };
+  const yiv = map[iv] || '1d';
+  const p1 = Math.floor(fromMs / 1000), p2 = Math.floor(toMs / 1000);
+  const base = (typeof location !== 'undefined' && location.port) ? '' : 'http://127.0.0.1:8080';
+  const res = await fetch(`${base}/api/yahoo?symbol=${encodeURIComponent(sym)}&interval=${yiv}&period1=${p1}&period2=${p2}`);
+  const j = await res.json();
+  const r = j.chart && j.chart.result && j.chart.result[0];
+  if (!r || !r.timestamp) return [];
+  const q = r.indicators.quote[0];
+  let out = r.timestamp.map((t, i) => ({
+    t: t * 1000,
+    o: q.open[i], h: q.high[i], l: q.low[i], c: q.close[i], v: q.volume[i] || 0
+  })).filter(k => k.o != null && k.c != null && k.t >= fromMs && k.t <= toMs);
+  if (iv === '4h') out = aggCandles(out, 4 * 36e5);
+  return out;
+}
+
 async function fetchRange(sym, iv, fromMs, toMs) {
+  if (!isBinance(sym)) return yahooRange(sym, iv, fromMs, toMs);
   const out = [];
   let cur = fromMs;
   while (cur < toMs) {
