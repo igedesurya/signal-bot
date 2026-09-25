@@ -71,8 +71,8 @@ footer { max-width: 1280px; margin: 0 auto; padding: 20px; color: var(--mut); fo
 <main>
 <div class="hero">
 <div>
-<h1>Baca tren kripto tanpa pusing</h1>
-<p class="sub">Sinyal BELI / HATI-HATI / TUNGGU dari data publik Binance Spot. Bukan perintah beli/jual otomatis, bukan nasihat keuangan.</p>
+<h1>Baca tren pasar tanpa pusing</h1>
+<p class="sub">Sinyal BELI / HATI-HATI / TUNGGU dari data publik Binance + Yahoo. Bukan perintah beli/jual otomatis, bukan nasihat keuangan.</p>
 <div style="margin-top:14px"><span id="sig" class="badge wait">Memuat...</span></div>
 <div class="meaning"><ul id="explain"></ul></div>
 </div>
@@ -101,6 +101,13 @@ footer { max-width: 1280px; margin: 0 auto; padding: 20px; color: var(--mut); fo
 <div><label>Strategi chart</label><br><select id="strategy"><option value="SMA">SMA + RSI (lama)</option><option value="FREQ">Freq v1: TEMA + BB + RSI cross</option><option value="FREQ2">Freq v2: ikut tren + keluar cepat</option><option value="FREQ3" selected>Freq v3: momentum + tahan tren (baru)</option></select></div>
 <div><label>&nbsp;</label><br><button id="refresh">Refresh</button></div>
 </div>
+<div class="preset-row" style="margin-top:10px">
+<button id="cP1d" class="preset" style="background:#123d2a;border-color:#1f7a4d">Chart: BTC 1D Freq v1</button>
+<button id="cP4h" class="preset" style="background:#123d2a;border-color:#1f7a4d">Chart: BTC 4H SMA</button>
+<button id="cPUS" class="preset" style="background:#1e2a4a;border-color:#3b82f6">Chart: NVDA daily</button>
+<button id="cPID" class="preset" style="background:#1e2a4a;border-color:#3b82f6">Chart: BBCA daily</button>
+<button id="cPGold" class="preset" style="background:#3a2f10;border-color:#b98a1d">Chart: Emas daily</button>
+</div>
 <div class="grid">
 <div class="stat"><small>Harga sekarang</small><b id="price">-</b><br><span id="since">-</span></div>
 <div class="stat"><small id="trendShortLabel">Tren cepat</small><b id="sma20">-</b><br><span id="trendShortDesc">-</span></div>
@@ -127,15 +134,15 @@ Arahkan kursor ke chart untuk lihat detail tiap candle.
 </div>
 <div class="card">
 <h2>Simulasi: kalau ikut sinyal ini pakai uangmu</h2>
-<p class="desc">Pilih modal dan rentang tanggal, lalu klik Jalankan. Dihitung langsung di browser dari data Binance. Atau pakai paket juara hasil backtest 6 bulan:</p>
+<p class="desc">Pilih modal dan rentang tanggal, lalu klik Jalankan. Cuma pakai setting di panel ini, tidak ikut chart atas.</p>
 <div class="preset-row">
-<button id="preset1d" class="preset" style="background:#123d2a;border-color:#1f7a4d">Paket 1D juara (Freq v1 +26,3%)</button>
-<button id="preset4h" class="preset" style="background:#123d2a;border-color:#1f7a4d">Paket 4H juara (SMA +31,0%)</button>
-<button id="presetHold" class="preset" style="background:#232b3b">Paket 1H: hold saja</button>
-<button id="presetUS" class="preset" style="background:#1e2a4a;border-color:#3b82f6">Paket Saham AS (daily)</button>
-<button id="presetIN" class="preset" style="background:#1e2a4a;border-color:#3b82f6">Paket Saham India (daily)</button>
-<button id="presetID" class="preset" style="background:#1e2a4a;border-color:#3b82f6">Paket Saham ID (daily)</button>
-<button id="presetGold" class="preset" style="background:#3a2f10;border-color:#b98a1d">Paket Emas (daily)</button>
+<button id="preset1d" class="preset" style="background:#123d2a;border-color:#1f7a4d">Sim: 1D juara (Freq v1 +26,3%)</button>
+<button id="preset4h" class="preset" style="background:#123d2a;border-color:#1f7a4d">Sim: 4H juara (SMA +31,0%)</button>
+<button id="presetHold" class="preset" style="background:#232b3b">Sim: 1H hold saja</button>
+<button id="presetUS" class="preset" style="background:#1e2a4a;border-color:#3b82f6">Sim: Saham AS (daily)</button>
+<button id="presetIN" class="preset" style="background:#1e2a4a;border-color:#3b82f6">Sim: Saham India (daily)</button>
+<button id="presetID" class="preset" style="background:#1e2a4a;border-color:#3b82f6">Sim: Saham ID (daily)</button>
+<button id="presetGold" class="preset" style="background:#3a2f10;border-color:#b98a1d">Sim: Emas (daily)</button>
 </div>
 <div class="warnbox" id="mktBox" style="color:#7dd3fc"></div>
 <div class="warnbox" id="simWarn"></div>
@@ -554,16 +561,25 @@ $('simInterval').onchange = () => {
     ? 'Catatan: di 1 jam buy-hold (+23,7%) mengalahkan sinyal terbaik (+11,7%). Pertimbangkan hold saja.'
     : '';
 };
+const setChart = (sym, iv, strat) => {
+  $('symbol').value = sym;
+  $('interval').value = iv;
+  $('strategy').value = strat;
+  refreshMktBox();
+  load();
+};
+$('cP1d').onclick = () => setChart('BTCUSDT', '1d', 'FREQ');
+$('cP4h').onclick = () => setChart('BTCUSDT', '4h', 'SMA');
+$('cPUS').onclick = () => setChart('NVDA', '1d', 'SMA');
+$('cPID').onclick = () => setChart('BBCA.JK', '1d', 'SMA');
+$('cPGold').onclick = () => setChart('PAXGUSDT', '1d', 'FREQ');
 const applyPreset = (iv, strat) => {
   $('simInterval').value = iv;
   $('simStrategy').value = strat;
   $('simSL').value = '0.20';
   $('simTrail').value = '0.15';
   $('simROI').value = 'SLOW';
-  $('strategy').value = strat;
-  $('interval').value = iv;
   $('simInterval').onchange();
-  load();
 };
 // Jam bursa (WIB): AS 20.30-03.00 (Senin-Jumat), India 10.45-17.00, ID 09.00-15.15 (Jumat beda), Kripto/Emas token 24/7.
 const MKTS = [
@@ -598,35 +614,27 @@ function refreshMktBox() {
   $('mktBox').innerHTML = `Chart (${$('symbol').value}): ${a}${b}<br><span style="color:#9aa3b8">Saham cuma gerak saat bursa buka. Sinyal di luar jam bursa pakai candle terakhir yang tersedia.</span>`;
 }
 const applyStockPreset = (sym, label) => {
-  $('symbol').value = sym;
   $('simSymbol').value = sym;
-  $('interval').value = '1d';
   $('simInterval').value = '1d';
-  $('strategy').value = 'SMA';
   $('simStrategy').value = 'SMA';
   $('simSL').value = '0.10';
   $('simTrail').value = '0.10';
   $('simROI').value = 'SLOW';
   $('simWarn').textContent = `${label}: saham geraknya pelan + ada gap tiap buka pasar, jadi pakai SMA daily + SL/trailing 10% + target Sabar. Bukan preset juara backtest (itu dari BTC), tapi setting aman buat mulai.`;
   refreshMktBox();
-  load();
 };
 $('presetUS').onclick = () => applyStockPreset('NVDA', 'Paket Saham AS');
 $('presetIN').onclick = () => applyStockPreset('RELIANCE.NS', 'Paket Saham India');
 $('presetID').onclick = () => applyStockPreset('BBCA.JK', 'Paket Saham ID');
 $('presetGold').onclick = () => {
-  $('symbol').value = 'PAXGUSDT';
   $('simSymbol').value = 'PAXGUSDT';
-  $('interval').value = '1d';
   $('simInterval').value = '1d';
-  $('strategy').value = 'FREQ';
   $('simStrategy').value = 'FREQ';
   $('simSL').value = '0.10';
   $('simTrail').value = '0.10';
   $('simROI').value = 'SLOW';
   $('simWarn').textContent = 'Paket Emas: PAXG ikut harga emas 24/7, volatilitasnya kecil. Pakai Freq v1 daily + SL/trailing 10% + target Sabar.';
   refreshMktBox();
-  load();
 };
 $('symbol').addEventListener('change', refreshMktBox);
 $('simSymbol').addEventListener('change', refreshMktBox);
