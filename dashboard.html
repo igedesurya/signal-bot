@@ -558,8 +558,9 @@ async function load() {
   $('sig').textContent = t('loading'); $('sig').className = 'badge wait';
   try {
     if (isBinance(sym)) {
-      const res = await fetch(`https://data-api.binance.vision/api/v3/klines?symbol=${sym}&interval=${iv}&limit=100&_=${Date.now()}`, { cache: 'no-store' });
+      const res = await fetch(`https://data-api.binance.vision/api/v3/klines?symbol=${sym}&interval=${iv}&limit=100`, { cache: 'no-store' });
       const raw = await res.json();
+      if (!Array.isArray(raw)) throw new Error((raw && raw.msg) ? raw.msg : 'bad response');
       candles = raw.map(r => ({ t: r[0], o: +r[1], h: +r[2], l: +r[3], c: +r[4], v: +r[5] }));
     } else {
       candles = await yahooCandles(sym, iv);
@@ -568,6 +569,7 @@ async function load() {
     sigs = computeSigs(closes, vols, mode);
     render(sym, iv, mode);
   } catch (e) {
+    console.error('load failed:', e);
     $('sig').textContent = t('load_err');
     $('explain').innerHTML = `<li>${t('load_err_tip')}</li>`;
   }
