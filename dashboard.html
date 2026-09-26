@@ -36,7 +36,10 @@ tailwind.config = { theme: { extend: { colors: { ink:'#0b0e14', card:'#141924', 
 <span class="text-[11px] text-mut border border-line rounded-full px-2.5 py-0.5">Binance + Yahoo</span>
 <span class="text-[11px] text-mut border border-line rounded-full px-2.5 py-0.5 hidden sm:inline" data-i18n="tag_readonly">Read-only, tanpa auto-trade</span>
 <span class="text-[11px] text-mut border border-line rounded-full px-2.5 py-0.5 hidden md:inline" data-i18n="tag_layman">Bahasa awam</span>
-<button id="langBtn" class="ml-auto btn !py-1 !px-3 text-[11px]">EN</button>
+<div class="ml-auto flex items-center gap-2">
+<a id="donateBtn" href="https://teer.id/surcamp" target="_blank" rel="noopener" class="btn !py-1 !px-3 text-[11px] bg-[#3a2f10] border-[#b98a1d]" data-i18n="donate">☕ Donasi</a>
+<button id="langBtn" class="btn !py-1 !px-3 text-[11px]">EN</button>
+</div>
 </div>
 </header>
 <main class="max-w-[1280px] mx-auto px-3 sm:px-4 py-3">
@@ -153,7 +156,12 @@ tailwind.config = { theme: { extend: { colors: { ink:'#0b0e14', card:'#141924', 
 </section>
 <details class="cardx text-[12px] text-mut"><summary class="cursor-pointer" data-i18n="raw_summary">Lihat data mentah (untuk yang ngerti teknis)</summary><pre id="json" class="bg-card2 p-2.5 rounded-lg overflow-auto text-[11.5px] mt-2">{}</pre></details>
 </main>
-<footer class="max-w-[1280px] mx-auto px-3 sm:px-4 py-3.5 text-mut text-[11px] border-t border-line mt-3 leading-snug" data-i18n-html="footer"></footer>
+<footer class="max-w-[1280px] mx-auto px-3 sm:px-4 py-3.5 text-mut text-[11px] border-t border-line mt-3 leading-snug">
+<div data-i18n-html="footer"></div>
+<div class="mt-3 text-center">
+<a id="donateFoot" href="https://teer.id/surcamp" target="_blank" rel="noopener" class="inline-block rounded-full px-4 py-2 text-[12px] font-bold bg-[#3a2f10] border border-[#b98a1d] text-[#f0c96a] hover:brightness-110" data-i18n="donate_footer">Suka dashboard ini? Dukung pengembangnya lewat Trakteer ☕</a>
+</div>
+</footer>
 
 <script>
 const $ = id => document.getElementById(id);
@@ -196,6 +204,7 @@ const STR = {
     btn_run:'Jalankan', btn_compare:'Bandingkan 4 strategi', sim_placeholder:'HASIL SIMULASIMU muncul di sini. Klik Jalankan simulasi.',
     raw_summary:'Lihat data mentah (untuk yang ngerti teknis)',
     updated:(x)=>`Update ${x}`,
+    donate:'☕ Donasi', donate_footer:'Suka dashboard ini? Dukung pengembangnya lewat Trakteer ☕',
     footer:'Sinyal JUAL artinya kondisi sedang melemah, bukan jaminan harga pasti turun. Jangan pakai uang yang tidak siap hilang.<br>Data: Binance + Yahoo publik (read-only). Bisa di-host statis atau lewat Docker/Portainer.',
     badge_buy:'BELI / TAHAN - Tren Lagi Naik', badge_sell:'HATI-HATI / KURANGI - Tren Lagi Turun', badge_wait:'TUNGGU DULU - Belum Jelas',
     pt_buy:['<b>Apa yang terjadi:</b> harga sekarang di atas rata-rata, dan belum terlalu panas. Artinya pembeli sedang lebih kuat dari penjual.','<b>Artinya buat kamu:</b> ini masa yang lebih aman untuk melirik beli dibanding saat tren turun.','<b>Harus apa:</b> kalau <b>belum punya</b>, boleh cicil kecil dulu, jangan all-in. Kalau <b>sudah punya</b>, tahan dulu. Tanda B hijau di chart menunjukkan di candle mana kondisi ini mulai muncul.'],
@@ -266,6 +275,7 @@ const STR = {
     btn_run:'Run', btn_compare:'Compare 4 strategies', sim_placeholder:'YOUR SIMULATION RESULT appears here. Click Run.',
     raw_summary:'View raw data (for technical folks)',
     updated:(x)=>`Updated ${x}`,
+    donate:'☕ Donate', donate_footer:'Enjoy this dashboard? Support the developer on Trakteer ☕',
     footer:'A SELL signal means conditions are weakening, not a guarantee the price will fall. Never use money you cannot afford to lose.<br>Data: Binance + Yahoo public (read-only). Can be hosted as a static file or via Docker/Portainer.',
     badge_buy:'BUY / HOLD - Uptrend', badge_sell:'CAUTION / REDUCE - Downtrend', badge_wait:'WAIT - Unclear',
     pt_buy:['<b>What is happening:</b> price is now above its averages and not too hot. Buyers are currently stronger than sellers.','<b>What it means for you:</b> this is a safer window to consider buying than during a downtrend.','<b>What to do:</b> if <b>you own none</b>, you may buy a small amount, never all-in. If <b>you already own</b>, hold. The green B marker shows which candle started this condition.'],
