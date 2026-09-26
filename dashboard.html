@@ -43,7 +43,7 @@ tailwind.config = { theme: { extend: { colors: { ink:'#0b0e14', card:'#141924', 
 
 <section class="rounded-2xl border border-line bg-card p-3.5 sm:p-4 grid grid-cols-1 lg:grid-cols-[1.35fr_1fr] gap-3.5 items-stretch">
 <div class="flex flex-col">
-<div class="text-[10.5px] uppercase tracking-wider text-mut mb-2" data-i18n="sig_now">Sinyal saat ini</div>
+<div class="text-[10.5px] uppercase tracking-wider text-mut mb-2"><span data-i18n="sig_now">Sinyal saat ini</span> <span class="text-[10px] normal-case tracking-normal">· <span id="upd"></span></span></div>
 <span id="sig" class="badge wait self-start" data-i18n="loading">Memuat...</span>
 <div class="meaning text-[12.5px] leading-relaxed mt-2"><ul id="explain" class="list-disc pl-4 space-y-1"></ul></div>
 </div>
@@ -195,6 +195,7 @@ const STR = {
     roi_none:'Tanpa target', roi_std:'Standar: 4% lalu 2% lalu 1%', roi_fast:'Cepat: 2% langsung kunci', roi_slow:'Sabar: 6% lalu 3%',
     btn_run:'Jalankan', btn_compare:'Bandingkan 4 strategi', sim_placeholder:'HASIL SIMULASIMU muncul di sini. Klik Jalankan simulasi.',
     raw_summary:'Lihat data mentah (untuk yang ngerti teknis)',
+    updated:(x)=>`Update ${x}`,
     footer:'Sinyal JUAL artinya kondisi sedang melemah, bukan jaminan harga pasti turun. Jangan pakai uang yang tidak siap hilang.<br>Data: Binance + Yahoo publik (read-only). Bisa di-host statis atau lewat Docker/Portainer.',
     badge_buy:'BELI / TAHAN - Tren Lagi Naik', badge_sell:'HATI-HATI / KURANGI - Tren Lagi Turun', badge_wait:'TUNGGU DULU - Belum Jelas',
     pt_buy:['<b>Apa yang terjadi:</b> harga sekarang di atas rata-rata, dan belum terlalu panas. Artinya pembeli sedang lebih kuat dari penjual.','<b>Artinya buat kamu:</b> ini masa yang lebih aman untuk melirik beli dibanding saat tren turun.','<b>Harus apa:</b> kalau <b>belum punya</b>, boleh cicil kecil dulu, jangan all-in. Kalau <b>sudah punya</b>, tahan dulu. Tanda B hijau di chart menunjukkan di candle mana kondisi ini mulai muncul.'],
@@ -264,6 +265,7 @@ const STR = {
     roi_none:'No target', roi_std:'Standard: 4% then 2% then 1%', roi_fast:'Fast: lock 2% right away', roi_slow:'Patient: 6% then 3%',
     btn_run:'Run', btn_compare:'Compare 4 strategies', sim_placeholder:'YOUR SIMULATION RESULT appears here. Click Run.',
     raw_summary:'View raw data (for technical folks)',
+    updated:(x)=>`Updated ${x}`,
     footer:'A SELL signal means conditions are weakening, not a guarantee the price will fall. Never use money you cannot afford to lose.<br>Data: Binance + Yahoo public (read-only). Can be hosted as a static file or via Docker/Portainer.',
     badge_buy:'BUY / HOLD - Uptrend', badge_sell:'CAUTION / REDUCE - Downtrend', badge_wait:'WAIT - Unclear',
     pt_buy:['<b>What is happening:</b> price is now above its averages and not too hot. Buyers are currently stronger than sellers.','<b>What it means for you:</b> this is a safer window to consider buying than during a downtrend.','<b>What to do:</b> if <b>you own none</b>, you may buy a small amount, never all-in. If <b>you already own</b>, hold. The green B marker shows which candle started this condition.'],
@@ -513,7 +515,7 @@ async function yahooCandles(sym, iv) {
   const yiv = map[iv] || '1d';
   const rng = iv === '1d' ? '6mo' : '3mo';
   const base = (typeof location !== 'undefined' && location.port) ? '' : 'http://127.0.0.1:8087';
-  const res = await fetch(`${base}/api/yahoo?symbol=${encodeURIComponent(sym)}&interval=${yiv}&range=${rng}`);
+  const res = await fetch(`${base}/api/yahoo?symbol=${encodeURIComponent(sym)}&interval=${yiv}&range=${rng}&_=${Date.now()}`, { cache: 'no-store' });
   const j = await res.json();
   const r = j.chart && j.chart.result && j.chart.result[0];
   if (!r || !r.timestamp) throw new Error('no yahoo data');
@@ -542,7 +544,7 @@ async function load() {
   $('sig').textContent = t('loading'); $('sig').className = 'badge wait';
   try {
     if (isBinance(sym)) {
-      const res = await fetch(`https://data-api.binance.vision/api/v3/klines?symbol=${sym}&interval=${iv}&limit=100`);
+      const res = await fetch(`https://data-api.binance.vision/api/v3/klines?symbol=${sym}&interval=${iv}&limit=100&_=${Date.now()}`, { cache: 'no-store' });
       const raw = await res.json();
       candles = raw.map(r => ({ t: r[0], o: +r[1], h: +r[2], l: +r[3], c: +r[4], v: +r[5] }));
     } else {
@@ -594,6 +596,8 @@ function render(sym, iv, mode) {
     : t('hist_none');
 
   $('json').textContent = JSON.stringify({ symbol: sym, interval: iv, strategy: mode, signal: cur.s, tag: cur.tag || '', price, fast: cur.s20, slow: cur.s50, rsi14: cur.r }, null, 2);
+  const upd = $('upd');
+  if (upd) upd.textContent = T('updated', new Date().toLocaleTimeString(LANG === 'en' ? 'en-US' : 'id-ID', {hour:'2-digit', minute:'2-digit', second:'2-digit'}));
   draw();
 }
 
@@ -778,14 +782,14 @@ $('presetHold').onclick = () => {
   $('simInterval').onchange();
 };
 applyLang();
-load(); setInterval(load, 60000);
+load(); setInterval(load, 30000);
 
 async function yahooRange(sym, iv, fromMs, toMs) {
   const map = { '15m': '15m', '1h': '60m', '4h': '60m', '1d': '1d' };
   const yiv = map[iv] || '1d';
   const p1 = Math.floor(fromMs / 1000), p2 = Math.floor(toMs / 1000);
   const base = (typeof location !== 'undefined' && location.port) ? '' : 'http://127.0.0.1:8087';
-  const res = await fetch(`${base}/api/yahoo?symbol=${encodeURIComponent(sym)}&interval=${yiv}&period1=${p1}&period2=${p2}`);
+  const res = await fetch(`${base}/api/yahoo?symbol=${encodeURIComponent(sym)}&interval=${yiv}&period1=${p1}&period2=${p2}&_=${Date.now()}`, { cache: 'no-store' });
   const j = await res.json();
   const r = j.chart && j.chart.result && j.chart.result[0];
   if (!r || !r.timestamp) return [];

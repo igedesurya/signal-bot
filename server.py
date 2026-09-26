@@ -27,11 +27,15 @@ class H(BaseHTTPRequestHandler):
     def log_message(self, *a):
         pass
 
-    def _send(self, code, body, ctype="application/json"):
+    def _send(self, code, body, ctype="application/json", nocache=False):
         raw = body.encode() if isinstance(body, str) else body
         self.send_response(code)
         self.send_header("Content-Type", ctype)
         self.send_header("Access-Control-Allow-Origin", "*")
+        if nocache:
+            self.send_header("Cache-Control", "no-store, no-cache, must-revalidate")
+            self.send_header("Pragma", "no-cache")
+            self.send_header("Expires", "0")
         self.send_header("Content-Length", str(len(raw)))
         self.end_headers()
         self.wfile.write(raw)
@@ -69,7 +73,7 @@ class H(BaseHTTPRequestHandler):
             ctype = "text/javascript"
         elif f.suffix == ".json":
             ctype = "application/json"
-        return self._send(200, f.read_bytes(), ctype)
+        return self._send(200, f.read_bytes(), ctype, nocache=(ctype == "text/html"))
 
 
 if __name__ == "__main__":
