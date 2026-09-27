@@ -60,25 +60,7 @@ tailwind.config = { theme: { extend: { colors: { ink:'#0b0e14', card:'#141924', 
 
 <section class="cardx">
 <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 mb-2">
-<div><label class="lbl" data-i18n="lbl_asset">Aset</label><select id="symbol" class="inp mt-0.5">
-<optgroup label="Kripto 11 (Binance)" data-i18n-label="grp_crypto">
-<option>BTCUSDT</option><option>ETHUSDT</option><option>SOLUSDT</option><option>BNBUSDT</option><option>XRPUSDT</option><option>DOGEUSDT</option><option>ADAUSDT</option><option>AVAXUSDT</option><option>LINKUSDT</option><option>TONUSDT</option><option>SHIBUSDT</option>
-</optgroup>
-<optgroup label="Emas (Binance + Yahoo)" data-i18n-label="grp_gold">
-<option value="PAXGUSDT" data-i18n="opt_paxg">Emas PAXG (PAXGUSDT)</option>
-<option value="XAUTUSDT" data-i18n="opt_xaut">Emas XAUT (XAUTUSDT)</option>
-<option value="GC=F" data-i18n="opt_gcf">Emas Futures (GC=F)</option>
-</optgroup>
-<optgroup label="Saham AS 10 (Yahoo)" data-i18n-label="grp_us">
-<option value="NVDA">NVIDIA (NVDA)</option><option value="AAPL">Apple (AAPL)</option><option value="MSFT">Microsoft (MSFT)</option><option value="AMZN">Amazon (AMZN)</option><option value="GOOGL">Google (GOOGL)</option><option value="META">Meta (META)</option><option value="AVGO">Broadcom (AVGO)</option><option value="TSLA">Tesla (TSLA)</option><option value="BRK-B">Berkshire (BRK-B)</option><option value="JPM">JPMorgan (JPM)</option>
-</optgroup>
-<optgroup label="Saham India 10 (Yahoo)" data-i18n-label="grp_in">
-<option value="RELIANCE.NS">Reliance (RELIANCE.NS)</option><option value="HDFCBANK.NS">HDFC Bank (HDFCBANK.NS)</option><option value="BHARTIARTL.NS">Bharti Airtel (BHARTIARTL.NS)</option><option value="TCS.NS">TCS (TCS.NS)</option><option value="ICICIBANK.NS">ICICI Bank (ICICIBANK.NS)</option><option value="INFY.NS">Infosys (INFY.NS)</option><option value="SBIN.NS">SBI (SBIN.NS)</option><option value="ITC.NS">ITC (ITC.NS)</option><option value="LT.NS">L&T (LT.NS)</option><option value="HINDUNILVR.NS">HUL (HINDUNILVR.NS)</option>
-</optgroup>
-<optgroup label="Saham Indonesia 10 (Yahoo)" data-i18n-label="grp_id">
-<option value="BBCA.JK">BBCA</option><option value="BBRI.JK">BBRI</option><option value="BMRI.JK">BMRI</option><option value="TLKM.JK">TLKM</option><option value="ASII.JK">ASII</option><option value="UNTR.JK">UNTR</option><option value="INDF.JK">INDF</option><option value="KLBF.JK">KLBF</option><option value="SMGR.JK">SMGR</option><option value="ADRO.JK">ADRO</option>
-</optgroup>
-</select></div>
+<div><label class="lbl" data-i18n="lbl_asset">Aset</label><input type="search" id="symbolSearch" class="inp mt-0.5 mb-1" data-i18n-ph="search_asset" placeholder="Cari aset..."><select id="symbol" class="inp"></select></div>
 <div><label class="lbl" data-i18n="lbl_tf">Jangka waktu</label><select id="interval" class="inp mt-0.5"><option value="15m" data-i18n="tf_15m">15 menit</option><option value="1h" selected data-i18n="tf_1h">1 jam</option><option value="4h" data-i18n="tf_4h">4 jam</option><option value="1d" data-i18n="tf_1d">1 hari</option></select></div>
 <div><label class="lbl" data-i18n="lbl_strategy">Strategi</label><select id="strategy" class="inp mt-0.5"><option value="SMA" data-i18n="strat_sma">SMA + RSI (lama)</option><option value="FREQ" data-i18n="strat_freq1">Freq v1: TEMA + BB + RSI cross</option><option value="FREQ2" data-i18n="strat_freq2">Freq v2: ikut tren + keluar cepat</option><option value="FREQ3" selected data-i18n="strat_freq3">Freq v3: momentum + tahan tren</option></select></div>
 <div><label class="lbl" data-i18n="lbl_action">Aksi</label><button id="refresh" class="btn w-full mt-0.5" data-i18n="btn_refresh">Refresh</button></div>
@@ -139,25 +121,7 @@ tailwind.config = { theme: { extend: { colors: { ink:'#0b0e14', card:'#141924', 
 <div id="simWarn" class="text-[12px] text-[#fbbf24] leading-snug mb-1.5"></div>
 <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2">
 <div><label class="lbl" data-i18n="lbl_capital">Modal awal (USDT)</label><select id="simCapital" class="inp mt-0.5"><option>100</option><option selected>1000</option><option>10000</option></select></div>
-<div><label class="lbl" data-i18n="lbl_sim_asset">Aset simulasi</label><select id="simSymbol" class="inp mt-0.5">
-<optgroup label="Kripto 11 (Binance)" data-i18n-label="grp_crypto">
-<option>BTCUSDT</option><option>ETHUSDT</option><option>SOLUSDT</option><option>BNBUSDT</option><option>XRPUSDT</option><option>DOGEUSDT</option><option>ADAUSDT</option><option>AVAXUSDT</option><option>LINKUSDT</option><option>TONUSDT</option><option>SHIBUSDT</option>
-</optgroup>
-<optgroup label="Emas (Binance + Yahoo)" data-i18n-label="grp_gold">
-<option value="PAXGUSDT" data-i18n="opt_paxg">Emas PAXG (PAXGUSDT)</option>
-<option value="XAUTUSDT" data-i18n="opt_xaut">Emas XAUT (XAUTUSDT)</option>
-<option value="GC=F" data-i18n="opt_gcf">Emas Futures (GC=F)</option>
-</optgroup>
-<optgroup label="Saham AS 10 (Yahoo)" data-i18n-label="grp_us">
-<option value="NVDA">NVIDIA (NVDA)</option><option value="AAPL">Apple (AAPL)</option><option value="MSFT">Microsoft (MSFT)</option><option value="AMZN">Amazon (AMZN)</option><option value="GOOGL">Google (GOOGL)</option><option value="META">Meta (META)</option><option value="AVGO">Broadcom (AVGO)</option><option value="TSLA">Tesla (TSLA)</option><option value="BRK-B">Berkshire (BRK-B)</option><option value="JPM">JPMorgan (JPM)</option>
-</optgroup>
-<optgroup label="Saham India 10 (Yahoo)" data-i18n-label="grp_in">
-<option value="RELIANCE.NS">Reliance (RELIANCE.NS)</option><option value="HDFCBANK.NS">HDFC Bank (HDFCBANK.NS)</option><option value="BHARTIARTL.NS">Bharti Airtel (BHARTIARTL.NS)</option><option value="TCS.NS">TCS (TCS.NS)</option><option value="ICICIBANK.NS">ICICI Bank (ICICIBANK.NS)</option><option value="INFY.NS">Infosys (INFY.NS)</option><option value="SBIN.NS">SBI (SBIN.NS)</option><option value="ITC.NS">ITC (ITC.NS)</option><option value="LT.NS">L&T (LT.NS)</option><option value="HINDUNILVR.NS">HUL (HINDUNILVR.NS)</option>
-</optgroup>
-<optgroup label="Saham Indonesia 10 (Yahoo)" data-i18n-label="grp_id">
-<option value="BBCA.JK">BBCA</option><option value="BBRI.JK">BBRI</option><option value="BMRI.JK">BMRI</option><option value="TLKM.JK">TLKM</option><option value="ASII.JK">ASII</option><option value="UNTR.JK">UNTR</option><option value="INDF.JK">INDF</option><option value="KLBF.JK">KLBF</option><option value="SMGR.JK">SMGR</option><option value="ADRO.JK">ADRO</option>
-</optgroup>
-</select></div>
+<div><label class="lbl" data-i18n="lbl_sim_asset">Aset simulasi</label><input type="search" id="simSymbolSearch" class="inp mt-0.5 mb-1" data-i18n-ph="search_asset" placeholder="Cari aset..."><select id="simSymbol" class="inp"></select></div>
 <div><label class="lbl" data-i18n="lbl_sim_tf">Candle simulasi</label><select id="simInterval" class="inp mt-0.5"><option value="15m" data-i18n="tf_15m">15 menit</option><option value="1h" selected data-i18n="tf_1h">1 jam</option><option value="4h" data-i18n="tf_4h">4 jam</option><option value="1d" data-i18n="tf_1d">1 hari</option></select></div>
 <div><label class="lbl" data-i18n="lbl_sim_strategy">Strategi simulasi</label><select id="simStrategy" class="inp mt-0.5"><option value="SMA" data-i18n="strat_sma">SMA + RSI (lama)</option><option value="FREQ" data-i18n="strat_freq1">Freq v1: TEMA + BB + RSI cross</option><option value="FREQ2" data-i18n="strat_freq2">Freq v2: ikut tren + keluar cepat</option><option value="FREQ3" selected data-i18n="strat_freq3">Freq v3: momentum + tahan tren</option></select></div>
 <div><label class="lbl" data-i18n="lbl_sl">Batas rugi (stoploss)</label><select id="simSL" class="inp mt-0.5"><option value="0" data-i18n="sl_none">Tanpa stoploss</option><option value="0.03" data-i18n="sl_3">3% dari harga beli</option><option value="0.05" data-i18n="sl_5">5% dari harga beli</option><option value="0.10" data-i18n="sl_10">10% dari harga beli</option><option value="0.20" selected data-i18n="sl_20">20% dari harga beli (longgar)</option></select></div>
@@ -211,7 +175,8 @@ const STR = {
     chart_title:'Grafik harga + sinyal B / J', chart_desc:'Segitiga hijau B = mulai menarik untuk beli, merah J = mulai bahaya.',
     lbl_asset:'Aset', lbl_tf:'Jangka waktu', lbl_strategy:'Strategi', lbl_action:'Aksi', btn_refresh:'Refresh',
     legend:'<span style="display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:4px;background:#22c55e"></span>Candle hijau naik &nbsp; <span style="display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:4px;background:#ef4444"></span>Candle merah turun &nbsp; <span style="display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:4px;background:#60a5fa"></span>Garis cepat (SMA20 / TEMA9) &nbsp; <span style="display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:4px;background:#f59e0b"></span>Garis acuan (SMA50 / BB tengah)<br>Segitiga <b style="color:#4ade80">B</b> = mulai menarik untuk beli &nbsp;|&nbsp; Segitiga <b style="color:#f87171">J</b> = mulai bahaya, hati-hati/kurangi<br>Arahkan kursor ke chart untuk lihat detail tiap candle.',
-    grp_crypto:'Kripto 11 (Binance)', grp_gold:'Emas (Binance + Yahoo)', grp_us:'Saham AS 10 (Yahoo)', grp_in:'Saham India 10 (Yahoo)', grp_id:'Saham Indonesia 10 (Yahoo)',
+    grp_crypto:'Kripto 11 (Binance)', grp_gold:'Emas (Binance + Yahoo)', grp_us:'Saham AS 10 (Yahoo)', grp_in:'Saham India 10 (Yahoo)', grp_id:'Saham Indonesia 50 (Yahoo)',
+    search_asset:'Cari aset...',
     opt_paxg:'Emas PAXG (PAXGUSDT)', opt_xaut:'Emas XAUT (XAUTUSDT)', opt_gcf:'Emas Futures (GC=F)',
     tf_15m:'15 menit', tf_1h:'1 jam', tf_4h:'4 jam', tf_1d:'1 hari',
     strat_sma:'SMA + RSI (lama)', strat_freq1:'Freq v1: TEMA + BB + RSI cross', strat_freq2:'Freq v2: ikut tren + keluar cepat', strat_freq3:'Freq v3: momentum + tahan tren',
@@ -292,7 +257,8 @@ const STR = {
     chart_title:'Price chart + B / J signals', chart_desc:'Green triangle B = turning attractive to buy, red J = turning risky.',
     lbl_asset:'Asset', lbl_tf:'Timeframe', lbl_strategy:'Strategy', lbl_action:'Action', btn_refresh:'Refresh',
     legend:'<span style="display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:4px;background:#22c55e"></span>Green candle = price up &nbsp; <span style="display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:4px;background:#ef4444"></span>Red candle = price down &nbsp; <span style="display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:4px;background:#60a5fa"></span>Fast line (SMA20 / TEMA9) &nbsp; <span style="display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:4px;background:#f59e0b"></span>Reference line (SMA50 / BB middle)<br>Triangle <b style="color:#4ade80">B</b> = turning attractive to buy &nbsp;|&nbsp; Triangle <b style="color:#f87171">J</b> = turning risky, be careful<br>Hover the chart to see each candle detail.',
-    grp_crypto:'Crypto 11 (Binance)', grp_gold:'Gold (Binance + Yahoo)', grp_us:'US stocks 10 (Yahoo)', grp_in:'India stocks 10 (Yahoo)', grp_id:'Indonesia stocks 10 (Yahoo)',
+    grp_crypto:'Crypto 11 (Binance)', grp_gold:'Gold (Binance + Yahoo)', grp_us:'US stocks 10 (Yahoo)', grp_in:'India stocks 10 (Yahoo)', grp_id:'Indonesia stocks 50 (Yahoo)',
+    search_asset:'Search asset...',
     opt_paxg:'Gold PAXG (PAXGUSDT)', opt_xaut:'Gold XAUT (XAUTUSDT)', opt_gcf:'Gold Futures (GC=F)',
     tf_15m:'15 minutes', tf_1h:'1 hour', tf_4h:'4 hours', tf_1d:'1 day',
     strat_sma:'SMA + RSI (old)', strat_freq1:'Freq v1: TEMA + BB + RSI cross', strat_freq2:'Freq v2: trend follow + fast exit', strat_freq3:'Freq v3: momentum + hold trend',
@@ -370,12 +336,66 @@ const STR = {
 const t = k => (STR[LANG][k] !== undefined ? STR[LANG][k] : STR.id[k]);
 const T = (k, ...a) => { const v = t(k); return typeof v === 'function' ? v(...a) : v; };
 
+const mk = (suffix, arr) => arr.map(([tk, nm]) => ({ v: suffix ? tk + '.' + suffix : tk, s: tk, n: nm }));
+const ASSETS = [
+  { k:'grp_crypto', items: 'BTCUSDT ETHUSDT SOLUSDT BNBUSDT XRPUSDT DOGEUSDT ADAUSDT AVAXUSDT LINKUSDT TONUSDT SHIBUSDT'.split(' ').map(v => ({ v, s: v })) },
+  { k:'grp_gold', items: [{ v:'PAXGUSDT', ik:'opt_paxg' }, { v:'XAUTUSDT', ik:'opt_xaut' }, { v:'GC=F', ik:'opt_gcf' }] },
+  { k:'grp_us', items: mk('', [['NVDA','NVIDIA'],['AAPL','Apple'],['MSFT','Microsoft'],['AMZN','Amazon'],['GOOGL','Google'],['META','Meta'],['AVGO','Broadcom'],['TSLA','Tesla'],['BRK-B','Berkshire'],['JPM','JPMorgan']]) },
+  { k:'grp_in', items: mk('NS', [['RELIANCE','Reliance'],['HDFCBANK','HDFC Bank'],['BHARTIARTL','Bharti Airtel'],['TCS','TCS'],['ICICIBANK','ICICI Bank'],['INFY','Infosys'],['SBIN','SBI'],['ITC','ITC'],['LT','Larsen & Toubro'],['HINDUNILVR','Hindustan Unilever']]) },
+  { k:'grp_id', items: mk('JK', [['BBCA','Bank Central Asia'],['BBRI','Bank Rakyat Indonesia'],['BMRI','Bank Mandiri'],['BBNI','Bank Negara Indonesia'],['TLKM','Telkom Indonesia'],['ASII','Astra International'],['UNTR','United Tractors'],['INDF','Indofood'],['KLBF','Kalbe Farma'],['SMGR','Semen Indonesia'],['ADRO','Alamtri Resources'],['ICBP','Indofood CBP'],['INKP','Indah Kiat'],['PTBA','Bukit Asam'],['ANTM','Aneka Tambang'],['MDKA','Merdeka Copper Gold'],['INCO','Vale Indonesia'],['TINS','Timah'],['BSDE','Bumi Serpong Damai'],['CTRA','Ciputra Development'],['PWON','Pakuwon Jati'],['SMRA','Summarecon Agung'],['EXCL','XL Axiata'],['ISAT','Indosat'],['TOWR','Sarana Menara'],['MIKA','Mitra Keluarga'],['BRIS','Bank Syariah Indonesia'],['ARTO','Bank Jago'],['GOTO','GoTo Gojek Tokopedia'],['BUKA','Bukalapak'],['EMTK','Elang Mahkota'],['SIDO','Sido Muncul'],['MYOR','Mayora Indah'],['CPIN','Charoen Pokphand'],['JPFA','Japfa Comfeed'],['AALI','Astra Agro Lestari'],['LSIP','London Sumatra'],['AKRA','AKR Corporindo'],['PGAS','Perusahaan Gas Negara'],['MEDC','Medco Energi'],['PGEO','Pertamina Geothermal'],['ESSA','Surya Esa Perkasa'],['BRPT','Barito Pacific'],['TPIA','Chandra Asri'],['AMRT','Sumber Alfaria'],['MAPI','Mitra Adiperkasa'],['ACES','Ace Hardware'],['ERAA','Erajaya'],['HMSP','HM Sampoerna'],['GGRM','Gudang Garam']]) },
+];
+const assetLabel = it => it.ik ? t(it.ik) : (it.s || it.n || it.v);
+const assetHay = it => ((it.s || '') + ' ' + (it.n || '') + ' ' + it.v).toLowerCase();
+function buildSelect(id, q) {
+  const sel = $(id); if (!sel) return;
+  const cur = sel.value, needle = (q || '').trim().toLowerCase();
+  sel.innerHTML = '';
+  for (const g of ASSETS) {
+    const items = g.items.filter(it => !needle || assetHay(it).includes(needle));
+    if (!items.length) continue;
+    const og = document.createElement('optgroup');
+    og.label = t(g.k);
+    for (const it of items) {
+      const o = document.createElement('option');
+      o.value = it.v; o.textContent = assetLabel(it);
+      og.appendChild(o);
+    }
+    sel.appendChild(og);
+  }
+  if (cur) {
+    let found = [...sel.options].some(o => o.value === cur);
+    if (!found) {
+      const it = ASSETS.flatMap(g => g.items).find(x => x.v === cur);
+      if (it) {
+        let og = sel.querySelector('optgroup');
+        if (!og) { og = document.createElement('optgroup'); og.label = ''; sel.appendChild(og); }
+        const o = document.createElement('option');
+        o.value = it.v; o.textContent = assetLabel(it);
+        og.insertBefore(o, og.firstChild);
+        found = true;
+      }
+    }
+    if (found) sel.value = cur;
+  }
+}
+function buildSelects() {
+  buildSelect('symbol', $('symbolSearch') ? $('symbolSearch').value : '');
+  buildSelect('simSymbol', $('simSymbolSearch') ? $('simSymbolSearch').value : '');
+}
+function pickAsset(id, searchId, val) {
+  const s = $(searchId); if (s) s.value = '';
+  buildSelect(id, '');
+  $(id).value = val;
+}
+
 function applyLang() {
   document.documentElement.lang = LANG;
   document.title = LANG === 'en' ? 'Signal Bot — Read Market Trends in Plain Language' : 'Signal Bot — Baca Tren Pasar Bahasa Awam';
   document.querySelectorAll('[data-i18n]').forEach(el => { el.textContent = t(el.dataset.i18n); });
   document.querySelectorAll('[data-i18n-html]').forEach(el => { el.innerHTML = t(el.dataset.i18nHtml); });
   document.querySelectorAll('[data-i18n-label]').forEach(el => { el.setAttribute('label', t(el.dataset.i18nLabel)); });
+  document.querySelectorAll('[data-i18n-ph]').forEach(el => { el.setAttribute('placeholder', t(el.dataset.i18nPh)); });
+  buildSelects();
   $('langBtn').textContent = LANG === 'id' ? 'EN' : 'ID';
   if (candles.length && sigs.length) render($('symbol').value, $('interval').value, $('strategy').value);
   refreshMktBox();
@@ -742,6 +762,9 @@ $('refresh').onclick = load;
 $('symbol').onchange = load;
 $('interval').onchange = load;
 $('strategy').onchange = load;
+$('symbolSearch').oninput = e => buildSelect('symbol', e.target.value);
+$('simSymbolSearch').oninput = e => buildSelect('simSymbol', e.target.value);
+$('symbolSearch').onkeydown = e => { if (e.key === 'Enter') { e.preventDefault(); $('symbol').dispatchEvent(new Event('change')); e.target.blur(); } };
 $('simRun').onclick = runSim;
 $('simCompare').onclick = runCompare;
 $('simInterval').onchange = () => {
@@ -752,7 +775,7 @@ $('simInterval').onchange = () => {
     : '';
 };
 const setChart = (sym, iv, strat) => {
-  $('symbol').value = sym;
+  pickAsset('symbol', 'symbolSearch', sym);
   $('interval').value = iv;
   $('strategy').value = strat;
   refreshMktBox();
@@ -804,7 +827,7 @@ function refreshMktBox() {
   $('mktBox').innerHTML = `${T('mkt_chart', $('symbol').value, a)}${b}<br><span style="color:#9aa3b8">${t('mkt_foot')}</span>`;
 }
 const applyStockPreset = (sym, code) => {
-  $('simSymbol').value = sym;
+  pickAsset('simSymbol', 'simSymbolSearch', sym);
   $('simInterval').value = '1d';
   $('simStrategy').value = 'SMA';
   $('simSL').value = '0.10';
@@ -817,7 +840,7 @@ $('presetUS').onclick = () => applyStockPreset('NVDA', 'AS');
 $('presetIN').onclick = () => applyStockPreset('RELIANCE.NS', 'IN');
 $('presetID').onclick = () => applyStockPreset('BBCA.JK', 'ID');
 $('presetGold').onclick = () => {
-  $('simSymbol').value = 'PAXGUSDT';
+  pickAsset('simSymbol', 'simSymbolSearch', 'PAXGUSDT');
   $('simInterval').value = '1d';
   $('simStrategy').value = 'FREQ';
   $('simSL').value = '0.10';
