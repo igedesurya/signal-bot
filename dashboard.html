@@ -104,6 +104,25 @@ tailwind.config = { theme: { extend: { colors: { ink:'#0b0e14', card:'#141924', 
 </div>
 </div>
 </section>
+<section id="idxCard" class="cardx hidden">
+<h2 class="text-sm font-semibold m-0" data-i18n="idx_title">Saham IDX: panduan &amp; kalkulator</h2>
+<p class="text-[12px] text-mut m-0 mb-2" data-i18n="idx_desc">Strategi: beli di pre-closing sore, jual di pre-opening pagi. Jual minimal 2 tick di atas harga beli.</p>
+<div class="grid grid-cols-1 sm:grid-cols-3 gap-2">
+<div class="tile"><small class="text-mut text-[11px] block" data-i18n="idx_buy_label">Sesi beli (pre-closing)</small><b class="text-base">15:50-15:59 WIB</b><br><span class="text-[11px] text-mut">16:50-16:59 WITA · target kamu 16:45 WITA</span></div>
+<div class="tile"><small class="text-mut text-[11px] block" data-i18n="idx_sell_label">Sesi jual (pre-opening)</small><b class="text-base">08:45-08:59 WIB</b><br><span class="text-[11px] text-mut">09:45-09:59 WITA</span></div>
+<div class="tile"><small class="text-mut text-[11px] block" data-i18n="idx_count_label">Hitungan mundur</small><span id="idxCount" class="text-[12px] leading-snug">-</span></div>
+</div>
+<div class="mt-3 flex flex-wrap items-end gap-2">
+<div><label class="lbl" data-i18n="idx_buyprice">Harga beli kemarin</label><input id="idxBuy" type="number" inputmode="decimal" class="inp mt-0.5" style="max-width:160px" placeholder="1000"></div>
+<button id="idxPrefill" class="btn" data-i18n="idx_use_close">Pakai harga terakhir</button>
+</div>
+<div id="idxOut" class="result text-[12.5px] leading-relaxed mt-2 bg-card2 border border-acc rounded-xl p-2.5"></div>
+<ul class="list-disc pl-4 mt-2 text-[12px] text-mut space-y-1">
+<li data-i18n="idx_tip1">Jangan jual sama atau lebih rendah dari harga beli — malah rugi.</li>
+<li data-i18n="idx_tip2">Di IE, pilih harga terbaik dengan jumlah lot paling sedikit supaya cepat match.</li>
+<li data-i18n="idx_tip3">Jumat jamnya beda, dan ada batas auto-reject kalau harga melompat terlalu jauh.</li>
+</ul>
+</section>
 <section class="cardx">
 <h2 class="text-sm font-semibold m-0" data-i18n="sim_title">Simulasi: kalau ikut sinyal ini pakai uangmu</h2>
 <p class="text-[12px] text-mut m-0 mb-2" data-i18n="sim_desc">Pilih modal dan rentang tanggal, lalu klik Jalankan. Cuma pakai setting di panel ini, tidak ikut chart atas.</p>
@@ -208,6 +227,15 @@ const STR = {
     updated:(x)=>`Update ${x}`,
     donate:'☕ Donasi', donate_footer:'Suka dashboard ini? Dukung pengembangnya lewat Trakteer ☕',
     fab_donate:'☕ Donasi', nudge:'Hasil ini membantu? Traktir pengembangnya ☕',
+    idx_title:'Saham IDX: panduan & kalkulator',
+    idx_desc:'Strategi: beli di pre-closing sore, jual di pre-opening pagi. Jual minimal 2 tick di atas harga beli.',
+    idx_buy_label:'Sesi beli (pre-closing)', idx_sell_label:'Sesi jual (pre-opening)', idx_count_label:'Hitungan mundur',
+    idx_buyprice:'Harga beli kemarin', idx_use_close:'Pakai harga terakhir',
+    idx_need_price:'Isi harga beli dulu buat lihat ukuran tick dan harga jual minimum.',
+    idx_result:(tick,buy,min,p1,p3)=>`Ukuran tick: <b>${tick} poin</b>. Harga jual minimum: <b>${min}</b> (2 tick di atas ${buy}). Tangga: ${p1} (1 tick) &rarr; <b>${min} (2 tick)</b> &rarr; ${p3} (3 tick).<br><span style="font-size:11px;color:#9aa3b8">Aturan tick BEI: &lt;200 &rarr; 1 · 200-499 &rarr; 2 · 500-1.999 &rarr; 5 · 2.000-4.999 &rarr; 10 · &ge;5.000 &rarr; 25.</span>`,
+    idx_sell_in:'Jual (pre-opening) dalam', idx_buy_in:'Beli (pre-closing) dalam', idx_run_now:'sedang berjalan',
+    unit_d:'h', unit_h:'j', unit_m:'m',
+    idx_tip1:'Jangan jual sama atau lebih rendah dari harga beli — malah rugi.', idx_tip2:'Di IE, pilih harga terbaik dengan jumlah lot paling sedikit supaya cepat match.', idx_tip3:'Jumat jamnya beda, dan ada batas auto-reject kalau harga melompat terlalu jauh.',
     footer:'Sinyal JUAL artinya kondisi sedang melemah, bukan jaminan harga pasti turun. Jangan pakai uang yang tidak siap hilang.<br>Data: Binance + Yahoo publik (read-only). Bisa di-host statis atau lewat Docker/Portainer.',
     badge_buy:'BELI / TAHAN - Tren Lagi Naik', badge_sell:'HATI-HATI / KURANGI - Tren Lagi Turun', badge_wait:'TUNGGU DULU - Belum Jelas',
     pt_buy:['<b>Apa yang terjadi:</b> harga sekarang di atas rata-rata, dan belum terlalu panas. Artinya pembeli sedang lebih kuat dari penjual.','<b>Artinya buat kamu:</b> ini masa yang lebih aman untuk melirik beli dibanding saat tren turun.','<b>Harus apa:</b> kalau <b>belum punya</b>, boleh cicil kecil dulu, jangan all-in. Kalau <b>sudah punya</b>, tahan dulu. Tanda B hijau di chart menunjukkan di candle mana kondisi ini mulai muncul.'],
@@ -280,6 +308,15 @@ const STR = {
     updated:(x)=>`Updated ${x}`,
     donate:'☕ Donate', donate_footer:'Enjoy this dashboard? Support the developer on Trakteer ☕',
     fab_donate:'☕ Donate', nudge:'Found this useful? Buy the developer a coffee ☕',
+    idx_title:'IDX stocks: guide & calculator',
+    idx_desc:'Strategy: buy at the afternoon pre-closing, sell at the morning pre-opening. Sell at least 2 ticks above your buy price.',
+    idx_buy_label:'Buy session (pre-closing)', idx_sell_label:'Sell session (pre-opening)', idx_count_label:'Countdown',
+    idx_buyprice:'Yesterday buy price', idx_use_close:'Use latest price',
+    idx_need_price:'Enter your buy price to see the tick size and minimum sell price.',
+    idx_result:(tick,buy,min,p1,p3)=>`Tick size: <b>${tick} points</b>. Minimum sell: <b>${min}</b> (2 ticks above ${buy}). Ladder: ${p1} (1 tick) &rarr; <b>${min} (2 ticks)</b> &rarr; ${p3} (3 ticks).<br><span style="font-size:11px;color:#9aa3b8">IDX tick rule: &lt;200 &rarr; 1 · 200-499 &rarr; 2 · 500-1,999 &rarr; 5 · 2,000-4,999 &rarr; 10 · &ge;5,000 &rarr; 25.</span>`,
+    idx_sell_in:'Sell (pre-opening) in', idx_buy_in:'Buy (pre-closing) in', idx_run_now:'running now',
+    unit_d:'d', unit_h:'h', unit_m:'m',
+    idx_tip1:'Never sell at or below your buy price — that is a loss.', idx_tip2:'In the IE, pick the best price with the fewest lots so it matches faster.', idx_tip3:'Friday hours differ, and there is an auto-reject limit if the price jumps too far.',
     footer:'A SELL signal means conditions are weakening, not a guarantee the price will fall. Never use money you cannot afford to lose.<br>Data: Binance + Yahoo public (read-only). Can be hosted as a static file or via Docker/Portainer.',
     badge_buy:'BUY / HOLD - Uptrend', badge_sell:'CAUTION / REDUCE - Downtrend', badge_wait:'WAIT - Unclear',
     pt_buy:['<b>What is happening:</b> price is now above its averages and not too hot. Buyers are currently stronger than sellers.','<b>What it means for you:</b> this is a safer window to consider buying than during a downtrend.','<b>What to do:</b> if <b>you own none</b>, you may buy a small amount, never all-in. If <b>you already own</b>, hold. The green B marker shows which candle started this condition.'],
@@ -614,6 +651,7 @@ function render(sym, iv, mode) {
   $('json').textContent = JSON.stringify({ symbol: sym, interval: iv, strategy: mode, signal: cur.s, tag: cur.tag || '', price, fast: cur.s20, slow: cur.s50, rsi14: cur.r }, null, 2);
   const upd = $('upd');
   if (upd) upd.textContent = T('updated', new Date().toLocaleTimeString(LANG === 'en' ? 'en-US' : 'id-ID', {hour:'2-digit', minute:'2-digit', second:'2-digit'}));
+  idxToggle(sym);
   draw();
 }
 
@@ -797,6 +835,50 @@ $('presetHold').onclick = () => {
   $('simInterval').value = '1h';
   $('simInterval').onchange();
 };
+function idxTick(p) { if (p < 200) return 1; if (p < 500) return 2; if (p < 2000) return 5; if (p < 5000) return 10; return 25; }
+function fmtIDX(v) { return v.toLocaleString(LANG === 'en' ? 'en-US' : 'id-ID', {maximumFractionDigits: 0}); }
+function idxRender() {
+  const el = $('idxOut'); if (!el) return;
+  const raw = $('idxBuy').value, buy = parseFloat(raw);
+  if (!raw || isNaN(buy) || buy <= 0) { el.innerHTML = t('idx_need_price'); return; }
+  const tick = idxTick(buy), min = buy + 2 * tick;
+  el.innerHTML = T('idx_result', fmtIDX(tick), fmtIDX(buy), fmtIDX(min), fmtIDX(buy + tick), fmtIDX(buy + 3 * tick));
+}
+$('idxBuy').oninput = idxRender;
+$('idxPrefill').onclick = () => { if (candles.length) { $('idxBuy').value = candles[candles.length-1].c; idxRender(); } };
+function idxToggle(sym) {
+  const card = $('idxCard'); if (!card) return;
+  const on = /\.JK$/.test(sym);
+  card.classList.toggle('hidden', !on);
+  if (on) idxRender();
+}
+function nextUTC(h, m) {
+  const now = new Date();
+  const d = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate(), h, m, 0));
+  let guard = 0;
+  while ((d.getTime() <= now.getTime() || d.getUTCDay() === 0 || d.getUTCDay() === 6) && guard++ < 10) d.setUTCDate(d.getUTCDate() + 1);
+  return d;
+}
+function inWindow(h, m, mins) {
+  const now = new Date(), dow = now.getUTCDay();
+  if (dow === 0 || dow === 6) return false;
+  const s = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate(), h, m, 0));
+  return now >= s && now <= new Date(s.getTime() + mins * 60000);
+}
+function fmtDur(ms) {
+  const M = Math.max(0, Math.floor(ms / 60000)), d = Math.floor(M / 1440), h = Math.floor((M % 1440) / 60), m = M % 60;
+  return d > 0 ? `${d}${t('unit_d')} ${h}${t('unit_h')} ${m}${t('unit_m')}` : `${h}${t('unit_h')} ${m}${t('unit_m')}`;
+}
+function idxCountdown() {
+  const el = $('idxCount'), card = $('idxCard');
+  if (!el || !card || card.classList.contains('hidden')) return;
+  const now = Date.now();
+  const sellTxt = inWindow(1, 45, 15) ? t('idx_run_now') : fmtDur(nextUTC(1, 45).getTime() - now);
+  const buyTxt = inWindow(8, 45, 15) ? t('idx_run_now') : fmtDur(nextUTC(8, 45).getTime() - now);
+  el.innerHTML = `${t('idx_sell_in')}: <b>${sellTxt}</b><br>${t('idx_buy_in')}: <b>${buyTxt}</b>`;
+}
+setInterval(idxCountdown, 1000); idxCountdown();
+
 const fab = $('fab');
 const toggleFab = () => {
   const show = window.scrollY > 320;
